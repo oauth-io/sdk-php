@@ -3,11 +3,11 @@
 require_once __DIR__ . '/../vendor/autoload.php';
 
 
-use OAuth_io\OAuth;
+use OAuth_io\OAuth;	
 
 
 
-class OAuthTest extends PHPUnit_Framework_TestCase {
+class InitialTest extends PHPUnit_Framework_TestCase {
 
 	protected $oauth;
 
@@ -23,7 +23,7 @@ class OAuthTest extends PHPUnit_Framework_TestCase {
 	}
 
 	public function testInitializeSetsKeyAndSecret() {
-		if (method_exists('OAuth', 'initialize')) {
+		if (method_exists($this->oauth, 'initialize') && method_exists($this->oauth, 'getAppKey') && method_exists($this->oauth, 'getAppSecret')) {
 			$this->oauth->initialize('somekey', 'somesecret');
 
 			$this->assertEquals($this->oauth->getAppKey(), 'somekey');
@@ -33,18 +33,18 @@ class OAuthTest extends PHPUnit_Framework_TestCase {
 		}
 	}
 
-	public function testOAuthdUrlIsOAuthIOByDefault() {
-		if (method_exists('OAuth', 'initialize') && method('OAuth', 'setOAuthdUrl')) {
+	public function testOauthdUrlIsOauthioByDefault() {
+		if (method_exists($this->oauth, 'initialize') && method_exists($this->oauth, 'setOAuthdUrl')) {
 
-			$this->assertEquals($this->oauth->getOAuthdUrl(), 'https://oaut.io');
+			$this->assertEquals('https://oauth.io', $this->oauth->getOAuthdUrl());
 
 		} else {
 			$this->fail('methods are missing');
 		}
 	}
 
-	public function testSetOAuthdUrlSetsUrlInObject() {
-		if (method_exists('OAuth', 'initialize') && method('OAuth', 'setOAuthdUrl')) {
+	public function testSetOauthdUrlSetsUrlInObject() {
+		if (method_exists($this->oauth, 'initialize') && method_exists($this->oauth, 'setOAuthdUrl')) {
 			$this->oauth->initialize('somekey', 'somesecret');
 			$this->oauth->setOAuthdUrl('https://oauthd.local');
 

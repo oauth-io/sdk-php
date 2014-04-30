@@ -9,6 +9,7 @@
     <filter>
 		<blacklist>
 		    <directory>./vendor</directory>
+            <file>./src/OAuth_io/Injector.php</file>
 		</blacklist>
 	</filter>
 </phpunit>

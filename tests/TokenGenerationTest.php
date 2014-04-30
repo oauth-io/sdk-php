@@ -6,23 +6,27 @@ use OAuth_io\OAuth;
 
 class TokenGenerationTest extends PHPUnit_Framework_TestCase {
 	protected $oauth;
+	protected $session;
 
 	protected function setUp() {
-		$this->oauth = new OAuth();
+		$this->session = array();
+		$this->oauth = new OAuth(array(
+			'session' => &$this->session
+		));
+		$this->oauth->initialize('somekey', 'somesecret');
 	}
 
 	public function testTokenGeneratorExists() {
-		$this->assertTrue(method_exists('OAuth', 'generateToken'));
+		$this->assertTrue(method_exists($this->oauth, 'generateToken'));
 	}
 
 	public function testTokenGeneratorResultFormat() {
-		if (method_exists('OAuth', 'generateToken')) {
-			$session = array();
+		if (method_exists($this->oauth, 'generateToken')) {
 
-			$token1 = $this->oauth->generateToken($session);
-			$token2 = $this->oauth->generateToken($session);
+			$token1 = $this->oauth->generateToken();
+			$token2 = $this->oauth->generateToken();
 
-			$this->assertTrue(is_string($token1) && is_string(token2));
+			$this->assertTrue(is_string($token1) && is_string($token2));
 			$this->assertTrue($token1 !== $token2);
 		} else {
 			$this->fail('$this->oauth->generateToken does not exist');
@@ -30,21 +34,20 @@ class TokenGenerationTest extends PHPUnit_Framework_TestCase {
 	}
 
 	public function testTokenGeneratorSessionStorage() {
-		if (method_exists('OAuth', 'generateToken')) {
-			$session = array();
+		if (true || method_exists($this->oauth, 'generateToken')) {
 
-			$token1 = $this->oauth->generateToken($session);
 
-			$this->assertTrue(isset($session["oauthio"]["tokens"][0]));
-			$this->assertEquals($session["oauthio"]["tokens"][0], $token1);
+			$token1 = $this->oauth->generateToken();
+			$this->assertTrue(isset($this->session["oauthio"]["tokens"][0]));
+			$this->assertEquals($this->session["oauthio"]["tokens"][0], $token1);
 
-			$token2 = $this->oauth->generateToken($session);
+			$token2 = $this->oauth->generateToken();
 
-			$this->assertTrue(isset($session["oauthio"]["tokens"][0]));
-			$this->assertEquals($session["oauthio"]["tokens"][0], $token2);
+			$this->assertTrue(isset($this->session["oauthio"]["tokens"][0]));
+			$this->assertEquals($this->session["oauthio"]["tokens"][0], $token2);
 
-			$this->assertTrue(isset($session["oauthio"]["tokens"][1]));
-			$this->assertEquals($session["oauthio"]["tokens"][1], $token1);
+			$this->assertTrue(isset($this->session["oauthio"]["tokens"][1]));
+			$this->assertEquals($this->session["oauthio"]["tokens"][1], $token1);
 		}
 	}
 }

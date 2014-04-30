@@ -7,7 +7,7 @@ This SDK allows you to use OAuth.io's server-side flow from a PHP backend, to ha
 
 You can use it with one of our front-end SDKs ([JavaScript][1], [PhoneGap][2], [iOS][3], [Android][4]), which will handle the user input for the OAuth flow.
 
-This SDK is still under heavy development and some of the features described below may not work yet. You can get nightlies from the [develop branch][https://github.com/oauth-io/sdk-php/tree/develop] on the SDK's github page.
+This SDK is still under heavy development and some of the features described below may not work yet. You can get nightlies from the [develop branch](https://github.com/oauth-io/sdk-php/tree/develop) on the SDK's github page.
 
 A release will be posted soon.
 
