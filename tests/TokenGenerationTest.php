@@ -3,16 +3,20 @@
 require_once __DIR__ . '/../vendor/autoload.php';
 
 use OAuth_io\OAuth;
+use OAuth_io\Injector;
 
 class TokenGenerationTest extends PHPUnit_Framework_TestCase {
 	protected $oauth;
-	protected $session;
+	protected $injector;
 
 	protected function setUp() {
-		$this->session = array();
-		$this->oauth = new OAuth(array(
-			'session' => &$this->session
-		));
+		$this->injector->session = array();
+		$this->injector = new Injector();
+		$this->injector->session = array(
+			'hello' => 'world'
+		);
+		Injector::setInstance($this->injector);
+		$this->oauth = new OAuth();
 		$this->oauth->initialize('somekey', 'somesecret');
 	}
 
@@ -38,16 +42,16 @@ class TokenGenerationTest extends PHPUnit_Framework_TestCase {
 
 
 			$token1 = $this->oauth->generateToken();
-			$this->assertTrue(isset($this->session["oauthio"]["tokens"][0]));
-			$this->assertEquals($this->session["oauthio"]["tokens"][0], $token1);
+
+			$this->assertTrue(isset($this->injector->session["oauthio"]["tokens"][0]));
+			$this->assertEquals($this->injector->session["oauthio"]["tokens"][0], $token1);
 
 			$token2 = $this->oauth->generateToken();
+			$this->assertTrue(isset($this->injector->session["oauthio"]["tokens"][0]));
+			$this->assertEquals($this->injector->session["oauthio"]["tokens"][0], $token2);
 
-			$this->assertTrue(isset($this->session["oauthio"]["tokens"][0]));
-			$this->assertEquals($this->session["oauthio"]["tokens"][0], $token2);
-
-			$this->assertTrue(isset($this->session["oauthio"]["tokens"][1]));
-			$this->assertEquals($this->session["oauthio"]["tokens"][1], $token1);
+			$this->assertTrue(isset($this->injector->session["oauthio"]["tokens"][1]));
+			$this->assertEquals($this->injector->session["oauthio"]["tokens"][1], $token1);
 		}
 	}
 }

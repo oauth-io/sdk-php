@@ -7,30 +7,28 @@ use HTTP\Request2;
 use HTTP\Request2\Adapter\Mock;
 
 class AuthTest extends PHPUnit_Framework_TestCase {
-    
     protected $oauth;
     protected $token;
     protected $adapter_mock;
     protected $session;
     protected $injector;
+    
     protected function setUp() {
         $this->adapter_mock = new HTTP_Request2_Adapter_Mock();
         $this->injector = $this->getMockBuilder('OAuth_io\Injector')->getMock();
+        OAuth_io\Injector::setInstance($this->injector);
         $this->request_mock = $this->getMockBuilder('\HTTP_Request2')->setMethods(null)->getMock();
         $this->request_mock->setConfig(array(
             'adapter' => $this->adapter_mock
         ));
         $this->injector->expects($this->any())->method('getRequest')->will($this->returnValue($this->request_mock));
-        $this->session = array('hello' => 'world');
-
-        $this->oauth = new OAuth(array(
-        	'injector' => $this->injector,
-        	'session' => &$this->session
-        ));
-        if (method_exists($this->oauth, 'initialize')) {
-            $this->oauth->initialize('somekey', 'somesecret');
-            $this->token = $this->oauth->generateToken();
-        }
+        
+        $this->injector->session = array(
+            'hello' => 'world'
+        );
+        $this->oauth = new OAuth();
+        $this->oauth->initialize('somekey', 'somesecret');
+        $this->token = $this->oauth->generateToken();
     }
     
     public function testAuthMethodExists() {
@@ -61,7 +59,7 @@ class AuthTest extends PHPUnit_Framework_TestCase {
             $this->fail('OAuth::auth() does not exist');
         }
     }
-
+    
     public function testAuthMethodSetsProviderFieldInSessions() {
         if (method_exists($this->oauth, 'auth')) {
             $fields = array(
@@ -77,10 +75,10 @@ class AuthTest extends PHPUnit_Framework_TestCase {
             
             $this->adapter_mock->addResponse("HTTP/1.1 200 OK\r\n" . "Content-Type: application/json\r\n" . "\r\n" . json_encode($response) , "https://oauth.io/auth/token", 'https://oauth.io/auth/token');
             $result = $this->oauth->auth('somecode');
-            $this->assertTrue(isset($this->session['oauthio']['auth']['blabla']));
-            $this->assertEquals('someaccesstoken', $this->session['oauthio']['auth']['blabla']['access_token']);
-            $this->assertEquals($this->token, $this->session['oauthio']['auth']['blabla']['state']);
-            $this->assertEquals('blabla', $this->session['oauthio']['auth']['blabla']['provider']);
+            $this->assertTrue(isset($this->injector->session['oauthio']['auth']['blabla']));
+            $this->assertEquals('someaccesstoken', $this->injector->session['oauthio']['auth']['blabla']['access_token']);
+            $this->assertEquals($this->token, $this->injector->session['oauthio']['auth']['blabla']['state']);
+            $this->assertEquals('blabla', $this->injector->session['oauthio']['auth']['blabla']['provider']);
         } else {
             $this->fail('OAuth::auth() does not exist');
         }

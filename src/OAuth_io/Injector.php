@@ -4,10 +4,29 @@ require_once __DIR__ . '/../../vendor/autoload.php';
 
 class Injector {
     
-    private $session;
-    
+    public $session;
+    public $config = array(
+        'oauthd_url' => 'https://oauth.io',
+        'app_key' => '',
+        'app_secret' => ''
+    );
+
+    private static $instance = null;
+
+    public static function getInstance() {
+        if (!is_object(self::$instance)) {
+            self::$instance = new Injector();
+        }
+        return self::$instance;
+    }
+
+    public static function setInstance($instance) {
+        self::$instance = $instance;
+    }
+
+
     public function __construct() {
-        if (isset($_SESSION)) $this->session = $_SESSION;
+        if (isset($_SESSION)) $this->session = &$_SESSION;
     }
     
     public function getRequest() {
@@ -21,4 +40,5 @@ class Injector {
     public function setSession(&$session) {
     	$this->session = &$session;
     }
+
 }
