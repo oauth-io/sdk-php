@@ -9,16 +9,10 @@
             "email": "team@oauth.io"
         }
     ],
-    "repositories": [
-        {
-            "type": "pear",
-            "url": "http://pear.php.net"
-        }
-    ],
     "minimum-stability": "dev",
     "require": {
         "php": ">=5.3.0",
-        "pear-pear.php.net/HTTP_Request2": "2.2.1"
+        "fpoirotte/http_request2": "2.1.*@dev"
     },
     "autoload": {
         "psr-0": {

@@ -10,6 +10,7 @@ class TokenGenerationTest extends PHPUnit_Framework_TestCase {
 	protected $injector;
 
 	protected function setUp() {
+		$this->injector = new Injector();
 		$this->injector->session = array();
 		$this->injector = new Injector();
 		$this->injector->session = array(
