@@ -2,8 +2,6 @@
 require_once __DIR__ . '/../vendor/autoload.php';
 
 use OAuth_io\OAuth;
-use HTTP\Request2;
-use HTTP\Request2\Adapter\Mock;
 
 class RequestsTest extends PHPUnit_Framework_TestCase {
     protected $oauth;
@@ -13,7 +11,7 @@ class RequestsTest extends PHPUnit_Framework_TestCase {
     protected $injector;
     
     protected function setUp() {
-        $this->adapter_mock = new HTTP_Request2_Adapter_Mock();
+        $this->adapter_mock = new \HTTP_Request2_Adapter_Mock();
         $this->injector = $this->getMockBuilder('OAuth_io\Injector')->getMock();
         OAuth_io\Injector::setInstance($this->injector);
         $this->request_mock = $this->getMockBuilder('\HTTP_Request2')->setMethods(null)->getMock();
