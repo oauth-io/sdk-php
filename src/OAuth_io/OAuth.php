@@ -9,8 +9,11 @@ class OAuth {
      *
      *
      */
-    public function __construct() {
+    public function __construct(&$session = null) {
         $this->injector = Injector::getInstance();
+        if ($session != null) {
+            $this->injector->session = &$session;
+        }
     }
     
     /**
