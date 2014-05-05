@@ -9,11 +9,12 @@ class OAuth {
      *
      *
      */
-    public function __construct(&$session = null) {
+    public function __construct(&$session = null, $ssl_verification=true) {
         $this->injector = Injector::getInstance();
-        if ($session != null) {
-            $this->injector->session = &$session;
+        if (is_array($session)) {
+            $this->injector->session = & $session;
         }
+        $this->injector->ssl_verification = $ssl_verification;
     }
     
     /**
@@ -69,7 +70,7 @@ class OAuth {
     }
     
     public function generateToken() {
-        $unique_token = uniqid('', true);
+        $unique_token = sha1(uniqid('', true));
         array_unshift($this->injector->session['oauthio']['tokens'], $unique_token);
         if (count($this->injector->session['oauthio']['tokens']) > 4) {
             array_splice($this->injector->session['oauthio']['tokens'], 4);
@@ -78,19 +79,40 @@ class OAuth {
     }
     
     public function auth($code) {
-        $request = $this->injector->getRequest();
-        $request->setMethod(\HTTP_Request2::METHOD_POST);
-        $request->setUrl($this->injector->config['oauthd_url'] . '/auth/token');
-        $request->addPostParameter(array(
-            'code' => $code,
-            'key' => $this->injector->config['app_key'],
-            'secret' => $this->injector->config['app_secret']
-        ));
         
-        $response = $request->send();
-        $response = json_decode($response->getBody() , true);
-        $this->injector->session['oauthio']['auth'][$response['provider']] = $response;
-        return $response;
+        // $request = $this->injector->getRequest();
+        // $request->setMethod(\HTTP_Request2::METHOD_POST);
+        // $request->setUrl($this->injector->config['oauthd_url'] . '/auth/token');
+        // $request->addPostParameter(array(
+        //     'code' => $code,
+        //     'key' => $this->injector->config['app_key'],
+        //     'secret' => $this->injector->config['app_secret']
+        // ));
+        
+        // $response = $request->send();
+        // $response = json_decode($response->getBody() , true);
+        // $this->injector->session['oauthio']['auth'][$response['provider']] = $response;
+        // return $response;
+        
+        $request = $this->injector->getRequest();
+        $response = $request->make_request(array(
+            'method' => 'POST',
+            'url' => $this->injector->config['oauthd_url'] . '/auth/access_token',
+            'body' => http_build_query(array(
+                'code' => $code,
+                'key' => $this->injector->config['app_key'],
+                'secret' => $this->injector->config['app_secret']
+            )),
+            'headers'=> array(
+                'Content-Type' => 'application/x-www-form-urlencoded'
+            )
+        ));
+        $result = $response->body;
+        $data = json_decode($result, true);
+        if (isset($data['provider'])) {
+            $this->injector->session['oauthio']['auth'][$data['provider']] = $data;    
+        }
+        return $result;
     }
     
     public function create($provider) {

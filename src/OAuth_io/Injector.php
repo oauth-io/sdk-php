@@ -1,6 +1,8 @@
 <?php
 namespace OAuth_io;
 
+use \Requests\Request;
+
 class Injector {
     
     public $session;
@@ -9,7 +11,7 @@ class Injector {
         'app_key' => '',
         'app_secret' => ''
     );
-
+    public $ssl_verification;
     private static $instance = null;
 
     public static function getInstance() {
@@ -29,7 +31,7 @@ class Injector {
     }
     
     public function getRequest() {
-        return new \HTTP_Request2();
+        return new HttpWrapper();
     }
     
     public function getSession() {
