@@ -5,7 +5,7 @@ OAuth that just works !
 
 This SDK allows you to use OAuth.io's server-side flow from a PHP backend, to handle access tokens from your server instead of directly from your front-end.
 
-You can use it with one of our front-end SDKs ([JavaScript][1], [PhoneGap][2], [iOS][3], [Android][4]), which will handle the user input for the OAuth flow.
+You can use it with one of our front-end SDKs ([JavaScript][1], [PhoneGap][2], [iOs][3], [Android][4]), which will handle the user input for the OAuth flow.
 
 This SDK is still under heavy development and some of the features described below may not work yet. You can get nightlies from the [develop branch](https://github.com/oauth-io/sdk-php/tree/develop) on the SDK's github page.
 
@@ -23,17 +23,27 @@ In the server-side OAuth authentication flow, the oauth token never leaves your 
 
 To authenticate a user, the flow follows these steps :
 
-- Ask for a unique CSRF token to the backend. This token will be used as a state for communicating with oauth.io
+- Ask the backend for a unique state token. This token will be used for communicating with oauth.io
 - Show a popup or redirect your user to request his permission to use his/her account on the requested provider
 - The latter gives you a code, that you give to your backend
 - The backend sends the code to oauth.io with other information like the oauth.io app's public key and secret.
-- oauth.io responds with the access_token, that you can then store on your backend as long as it's valid.
-- You can then make requests to the API using that access token, directly from your backend.
+- oauth.io responds with the access_token, that you can then store on your backend as long as it's valid
+- You can then make requests to the API using that access token, directly from your backend
 
 Installation
 ------------
 
-You will soon be able to install it through Composer by adding oauthio-sdk to your dependencies and running :
+You will soon be able to install it through Composer by adding the following dependency to your composer.json :
+
+```json
+ "require": {
+        ...
+        "oauth-io/oauth": "dev-develop"
+        ...
+    },
+```
+
+Then run in the console :
 
 ```sh
 $ composer install
@@ -54,13 +64,50 @@ use OAuth_io\OAuth;
 //?>
 ```
 
+**PSR-0 support**
+
+If you're using Composer with an autoloader, you can use the PSR-0 notation to use this package. Just put the following code at the top of your script :
+
+```php
+<?php
+
+use OAuth_io\OAuth;
+
+//?>
+```
+
 **Initialization**
 
 To initialize the SDK, you have to give it your OAuth.io's app's key and secret (you can grab them on the [oauth.io Key-Manager][https://oauth.io/key-manager]) :
 
 ```php
+<?php
 $oauth = new OAuth();
 $oauth->initialize('your_key', 'your_secret');
+//?>
+```
+
+*Note on session*
+
+You can give your own managed session array to the constructor so that if you already have a session manager, the SDK doesn't mess around with it :
+
+```php
+<?php
+$_SESSION['some_subarray_in_the_session'] = array();
+$myarray = $_SESSION['some_subarray_in_the_session'];
+
+$oauth = new OAuth($myarray);
+//?>
+```
+
+*Note on certificates*
+
+If you're using [oauthd](https://github.com/oauth-io/oauthd) (the open source version of [oauth.io](https://oauth.io)) and that you don't have a verified ssl certificate yet (you should in the future if you want to put your code in production), you can disable the SSL certificate verification like this :
+
+```php
+<?php
+$oauth = new OAuth(null, false);
+//?>
 ```
 
 **Generating a token**
@@ -68,16 +115,18 @@ $oauth->initialize('your_key', 'your_secret');
 You need to provide your front-end with a state token, that will be used to exchange information with OAuth.io. To generate it in the back-end :
 
 ```php
+<?php
 $token = $oauth->generateToken();
+//?>
 ```
 
-The `generateToken()` method returns a unique 23 character token. This token is stored in the session, and used by the other features.
+The `generateToken()` method returns a unique 23 character token. This token is stored in the session, and used to communicate with oauth.io.
 
-You can give this token to your front-end, where you can show the user a popup for him to log in to the provider and accept your app's permissions (see further down to see how to do that).
+You have to give this token to your front-end, where you can show the user a popup for him to log in to the provider and accept your app's permissions (see further down to see how to do that).
 
 **Auth the user**
 
-To be able to make requests to a provider's API using its access token, you have to call the `auth(code)` method. The code is retrieved from OAuth.io through the from the front-end SDK. You need to create an endpoint to allow the front-end to send it to the backend.
+To be able to make requests to a provider's API using its access token, you have to call the `auth(code)` method. The code is retrieved from OAuth.io through the from the front-end SDK (see further down). You need to create an endpoint to allow the front-end to send it to the backend.
 
 Once you have that code, you can call the method like this :
 
@@ -113,29 +162,36 @@ OAuth.popup('a_provider', {
 
 **Making requests to the API**
 
-You can create a request object from the SDK `create('provider')` method :
+Once the user is authenticated, you can create a request object from the SDK `create('provider')` method :
 
 ```php
+<?php
 $request_object = $oauth->create('some_provider');
+//?>
 ```
 
 Then, you can make get, post, put, delete and patch requests to the API like this :
 
 ```php
+<?php
 $response_GET = $request_object->get('https://theprovider.com/api/endpoint');
+
 $response_POST = $request_object->post('https://theprovider.com/api/endpoint', array('some' => 'data'));
 $response_PUT = $request_object->put('https://theprovider.com/api/endpoint', array('some' => 'data'));
 $response_DELETE = $request_object->del('https://theprovider.com/api/endpoint');
 $response_PATCH = $request_object->patch('https://theprovider.com/api/endpoint', array('some' => 'data'));
+//?>
 ```
 
 You can also call the `me(array $filters)` method from that request object. This method returns a unified array containing information about the user.
 
 ```php
+<?php
 $facebook_requester = $oauth->create('facebook');
 $result = $facebook_requester->me(array('firstname', 'lastname', 'email'));
 
 // you'll have $result["firstname"], $result["lastname"] and $result["email"] set with the user's facebook information.
+//?>
 ```
 
 You can refer to the OAuth.io me() feature to get more information about the fields that are returned by this method.
@@ -178,4 +234,4 @@ The SDK is released under the Apache2 license.
 [1]: https://github.com/oauth-io/oauth-js
 [2]: https://github.com/oauth-io/oauth-phonegap
 [3]: https://github.com/oauth-io/oauth-ios
-[4]: oauth-android
+[4]: https://github.com/oauth-io/oauth-android
