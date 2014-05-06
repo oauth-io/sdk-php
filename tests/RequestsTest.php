@@ -21,15 +21,15 @@ class RequestsTest extends PHPUnit_Framework_TestCase {
         
         $this->oauth->initialize('somekey', 'somesecret');
         $this->token = $this->oauth->generateToken();
-
-        $response = (object) array(
-            'body' => (object) array(
+        
+        $response = (object)array(
+            'body' => (object)array(
                 'access_token' => 'someaccesstoken',
                 'state' => $this->token,
                 'provider' => 'someprovider'
             )
         );
-       
+        
         $this->request_mock->expects($this->at(0))->method('make_request')->will($this->returnValue($response));
         $result = $this->oauth->auth('somecode');
     }
@@ -48,28 +48,35 @@ class RequestsTest extends PHPUnit_Framework_TestCase {
             $this->fail('$oauth->create() does not exist');
         }
     }
-
-
     
     public function testRequestObjectGetSendsAGetHttpRequest() {
         if (method_exists($this->oauth, 'create')) {
-
+            
             $request_object = $this->oauth->create('someprovider');
             
-            $this->request_mock->expects($this->at(0))->method('make_request')
-            ->will($this->returnCallback(function($params) {
+            $this->request_mock->expects($this->at(0))->method('make_request')->will($this->returnCallback(function ($params) {
+                
+                $this->assertEquals('https://oauth.io/request/someprovider/%2Fsome_address', $params['url']);
+
+                $this->assertEquals('GET', $params['method']);
+                
                 $this->assertTrue(isset($params['headers']));
                 $this->assertTrue(isset($params['headers']['oauthio']));
+                
                 $oauthio = array();
                 parse_str($params['headers']['oauthio'], $oauthio);
+                
                 $this->assertEquals('somekey', $oauthio['k']);
                 $this->assertEquals('someaccesstoken', $oauthio['access_token']);
-                return (object) array(
-                    'body' => (object) array('username' => 'Jean-Bernard')
+                
+                return (object)array(
+                    'body' => (object)array(
+                        'username' => 'Jean-Bernard'
+                    )
                 );
             }));
-            $response = $request_object->get('/some_adress');
-
+            $response = $request_object->get('/some_address');
+            
             $this->assertTrue(is_array($response));
             $this->assertEquals('Jean-Bernard', $response['username']);
         } else {
@@ -85,16 +92,33 @@ class RequestsTest extends PHPUnit_Framework_TestCase {
                 'message' => 'Hello World'
             );
             
-            $this->request_mock->expects($this->at(0))
-            ->method('make_request')->will($this->returnCallback(function ($params) {
+            $this->request_mock->expects($this->at(0))->method('make_request')->will($this->returnCallback(function ($params) {
+                
+                $this->assertEquals('https://oauth.io/request/someprovider/%2Fsome_address', $params['url']);
 
-                return (object) array(
-                    'body' => (object) array('result' => 'true')
+                $this->assertEquals('POST', $params['method']);
+
+                $body = $params['body'];
+                $this->assertEquals('Hello World', $body['message']);
+                
+                $this->assertTrue(isset($params['headers']));
+                $this->assertTrue(isset($params['headers']['oauthio']));
+                
+                $oauthio = array();
+                parse_str($params['headers']['oauthio'], $oauthio);
+                
+                $this->assertEquals('somekey', $oauthio['k']);
+                $this->assertEquals('someaccesstoken', $oauthio['access_token']);
+
+                return (object)array(
+                    'body' => (object)array(
+                        'result' => 'true'
+                    )
                 );
             }));
-           
-            $response = $request_object->post('/some_adress', $fields);
-
+            
+            $response = $request_object->post('/some_address', $fields);
+            
             $this->assertTrue(is_array($response));
             $this->assertEquals('true', $response['result']);
         } else {
@@ -110,16 +134,33 @@ class RequestsTest extends PHPUnit_Framework_TestCase {
                 'message' => 'Hello World'
             );
             
-             $this->request_mock->expects($this->at(0))
-            ->method('make_request')->will($this->returnCallback(function ($params) {
+            $this->request_mock->expects($this->at(0))->method('make_request')->will($this->returnCallback(function ($params) {
+                
+                $this->assertEquals('https://oauth.io/request/someprovider/%2Fsome_address', $params['url']);
 
-                return (object) array(
-                    'body' => (object) array('result' => 'true')
+                $this->assertEquals('PUT', $params['method']);
+
+                $body = $params['body'];
+                $this->assertEquals('Hello World', $body['message']);
+                
+                $this->assertTrue(isset($params['headers']));
+                $this->assertTrue(isset($params['headers']['oauthio']));
+                
+                $oauthio = array();
+                parse_str($params['headers']['oauthio'], $oauthio);
+                
+                $this->assertEquals('somekey', $oauthio['k']);
+                $this->assertEquals('someaccesstoken', $oauthio['access_token']);
+
+                return (object)array(
+                    'body' => (object)array(
+                        'result' => 'true'
+                    )
                 );
             }));
-
-            $response = $request_object->put('/some_adress', $fields);
-
+            
+            $response = $request_object->put('/some_address', $fields);
+            
             $this->assertTrue(is_array($response));
             $this->assertEquals('true', $response['result']);
         } else {
@@ -129,22 +170,39 @@ class RequestsTest extends PHPUnit_Framework_TestCase {
     
     public function testRequestObjectPatchSendsAPatchHttpRequest() {
         if (method_exists($this->oauth, 'create')) {
-
+            
             $request_object = $this->oauth->create('someprovider');
             
             $fields = array(
                 'message' => 'Hello World'
             );
             
-             $this->request_mock->expects($this->at(0))
-            ->method('make_request')->will($this->returnCallback(function ($params) {
+            $this->request_mock->expects($this->at(0))->method('make_request')->will($this->returnCallback(function ($params) {
+                
+                $this->assertEquals('https://oauth.io/request/someprovider/%2Fsome_address', $params['url']);
 
-                return (object) array(
-                    'body' => (object) array('result' => 'true')
+                $this->assertEquals('PATCH', $params['method']);
+
+                $body = $params['body'];
+                $this->assertEquals('Hello World', $body['message']);
+                
+                $this->assertTrue(isset($params['headers']));
+                $this->assertTrue(isset($params['headers']['oauthio']));
+                
+                $oauthio = array();
+                parse_str($params['headers']['oauthio'], $oauthio);
+                
+                $this->assertEquals('somekey', $oauthio['k']);
+                $this->assertEquals('someaccesstoken', $oauthio['access_token']);
+
+                return (object)array(
+                    'body' => (object)array(
+                        'result' => 'true'
+                    )
                 );
             }));
-            $response = $request_object->patch('/some_adress', $fields);
-
+            $response = $request_object->patch('/some_address', $fields);
+            
             $this->assertTrue(is_array($response));
             $this->assertEquals('true', $response['result']);
         } else {
@@ -160,15 +218,29 @@ class RequestsTest extends PHPUnit_Framework_TestCase {
                 'message' => 'Hello World'
             );
             
-             $this->request_mock->expects($this->at(0))
-            ->method('make_request')->will($this->returnCallback(function ($params) {
+            $this->request_mock->expects($this->at(0))->method('make_request')->will($this->returnCallback(function ($params) {
+                
+                $this->assertEquals('https://oauth.io/request/someprovider/%2Fsome_address', $params['url']);
 
-                return (object) array(
-                    'body' => (object) array('result' => 'true')
+                $this->assertEquals('DELETE', $params['method']);
+
+                $this->assertTrue(isset($params['headers']));
+                $this->assertTrue(isset($params['headers']['oauthio']));
+                
+                $oauthio = array();
+                parse_str($params['headers']['oauthio'], $oauthio);
+                
+                $this->assertEquals('somekey', $oauthio['k']);
+                $this->assertEquals('someaccesstoken', $oauthio['access_token']);
+
+                return (object)array(
+                    'body' => (object)array(
+                        'result' => 'true'
+                    )
                 );
             }));
-            $response = $request_object->del('/some_adress');
-
+            $response = $request_object->del('/some_address');
+            
             $this->assertTrue(is_array($response));
             $this->assertEquals('true', $response['result']);
         } else {
