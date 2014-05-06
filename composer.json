@@ -1,12 +1,12 @@
 {
-    "name": "oauthio/oauth",
+    "name": "oauth-io/oauth",
     "description": "OAuth that just works !",
     "license": "Apache2",
     "version": "0.0.1",
     "authors": [
         {
             "name": "Antoine Jackson",
-            "email": "team@oauth.io"
+            "email": "support@oauth.io"
         }
     ],
     "minimum-stability": "dev",
