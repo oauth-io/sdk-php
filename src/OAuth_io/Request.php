@@ -100,6 +100,6 @@ class Request {
     }
 
     public function me($filters=null) {
-        return (array) $this->makeMeRequest($filters)->body;
+        return (array) $this->makeMeRequest($filters)->body->data;
     }
 }
