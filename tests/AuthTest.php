@@ -12,13 +12,10 @@ class AuthTest extends PHPUnit_Framework_TestCase {
     protected $injector;
     
     protected function setUp() {
-        $this->adapter_mock = new \HTTP_Request2_Adapter_Mock();
         $this->injector = $this->getMockBuilder('OAuth_io\Injector')->getMock();
         OAuth_io\Injector::setInstance($this->injector);
-        $this->request_mock = $this->getMockBuilder('\HTTP_Request2')->setMethods(null)->getMock();
-        $this->request_mock->setConfig(array(
-            'adapter' => $this->adapter_mock
-        ));
+        $this->request_mock = $this->getMockBuilder('OAuth_io\HttpWrapper')->getMock();
+
         $this->injector->expects($this->any())->method('getRequest')->will($this->returnValue($this->request_mock));
         
         $this->injector->session = array(
@@ -40,17 +37,17 @@ class AuthTest extends PHPUnit_Framework_TestCase {
                 'key' => 'somekey',
                 'secret' => 'somesecret'
             );
-            $response = array(
-                'access_token' => 'someaccesstoken',
-                'state' => $this->token,
-                'provider' => 'some_provider'
-            );
-            
-            $this->adapter_mock->addResponse("HTTP/1.1 200 OK\r\n" . "Content-Type: application/json\r\n" . "\r\n" . json_encode($response) , "https://oauth.io/auth/token", 'https://oauth.io/auth/token');
+
+            $res = new stdClass();
+            $res->access_token = 'someaccesstoken';
+            $res->state = $this->token;
+            $res->provider = 'some_provider';
+            $response = new StdClass();
+            $response->body = $res;
+           
+            $this->request_mock->expects($this->once())->method('make_request')->will($this->returnValue($response));
+
             $result = $this->oauth->auth('somecode');
-            $this->assertEquals(http_build_query($fields) , $this->request_mock->getBody());
-            $this->assertEquals('POST', $this->request_mock->getMethod());
-            $this->assertTrue(is_array($result));
             $this->assertEquals($result['access_token'], 'someaccesstoken');
             $this->assertEquals($result['state'], $this->token);
         } else {
@@ -65,13 +62,15 @@ class AuthTest extends PHPUnit_Framework_TestCase {
                 'key' => 'somekey',
                 'secret' => 'somesecret'
             );
-            $response = array(
-                'access_token' => 'someaccesstoken',
-                'state' => $this->token,
-                'provider' => 'blabla'
-            );
-            
-            $this->adapter_mock->addResponse("HTTP/1.1 200 OK\r\n" . "Content-Type: application/json\r\n" . "\r\n" . json_encode($response) , "https://oauth.io/auth/token", 'https://oauth.io/auth/token');
+            $res = new stdClass();
+            $res->access_token = 'someaccesstoken';
+            $res->state = $this->token;
+            $res->provider = 'blabla';
+            $response = new StdClass();
+            $response->body = $res;
+
+            $this->request_mock->expects($this->once())->method('make_request')->will($this->returnValue($response));
+
             $result = $this->oauth->auth('somecode');
             $this->assertTrue(isset($this->injector->session['oauthio']['auth']['blabla']));
             $this->assertEquals('someaccesstoken', $this->injector->session['oauthio']['auth']['blabla']['access_token']);

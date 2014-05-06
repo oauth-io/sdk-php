@@ -9,7 +9,7 @@ class OAuth {
      *
      *
      */
-    public function __construct(&$session = null, $ssl_verification=true) {
+    public function __construct(&$session = null, $ssl_verification = true) {
         $this->injector = Injector::getInstance();
         if (is_array($session)) {
             $this->injector->session = & $session;
@@ -79,21 +79,6 @@ class OAuth {
     }
     
     public function auth($code) {
-        
-        // $request = $this->injector->getRequest();
-        // $request->setMethod(\HTTP_Request2::METHOD_POST);
-        // $request->setUrl($this->injector->config['oauthd_url'] . '/auth/token');
-        // $request->addPostParameter(array(
-        //     'code' => $code,
-        //     'key' => $this->injector->config['app_key'],
-        //     'secret' => $this->injector->config['app_secret']
-        // ));
-        
-        // $response = $request->send();
-        // $response = json_decode($response->getBody() , true);
-        // $this->injector->session['oauthio']['auth'][$response['provider']] = $response;
-        // return $response;
-        
         $request = $this->injector->getRequest();
         $response = $request->make_request(array(
             'method' => 'POST',
@@ -102,23 +87,25 @@ class OAuth {
                 'code' => $code,
                 'key' => $this->injector->config['app_key'],
                 'secret' => $this->injector->config['app_secret']
-            )),
-            'headers'=> array(
+            )) ,
+            'headers' => array(
                 'Content-Type' => 'application/x-www-form-urlencoded'
             )
         ));
         $result = $response->body;
-        $data = json_decode($result, true);
-        if (isset($data['provider'])) {
-            $this->injector->session['oauthio']['auth'][$data['provider']] = $data;    
+
+        if (isset($result->provider)) {
+            $this->injector->session['oauthio']['auth'][$result->provider] = json_decode(json_encode($result), true);
         }
-        return $result;
+        return json_decode(json_encode($result), true);
     }
     
     public function create($provider) {
+        
         if (isset($this->injector->session['oauthio']['auth'][$provider])) {
             $request = new Request();
             $request->initialize($provider);
+            
             return $request;
         } else {
             
