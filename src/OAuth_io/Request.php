@@ -46,6 +46,38 @@ class Request {
         }
         return $response;
     }
+
+    private function makeMeRequest($filters) {
+        if (!isset($this->injector->session['oauthio']['auth'][$this->provider])) {
+            throw new \Exception('Error');
+        } else {
+            $prov_data = $this->injector->session['oauthio']['auth'][$this->provider];
+            $requester = $this->injector->getRequest();
+
+            $tokens = array();
+            
+            $headers = array(
+                'k' => $this->injector->config['app_key']
+            );
+
+            if (isset($prov_data['access_token'])) {
+                $headers['access_token'] = $prov_data['access_token'];
+            }
+            if (isset($prov_data['oauth_token']) && isset($prov_data['oauth_token_secret'])) {
+                $headers['oauth_token'] = $prov_data['oauth_token'];
+                $headers['oauth_token_secret'] = $prov_data['oauth_token_secret'];
+                $headers['oauthv1'] = '1';
+            }
+
+            $response = $requester->make_request(array(
+                'method' => 'GET',
+                'url' => $this->injector->config['oauthd_url'] . '/auth/' . $this->provider . '/me',
+                'headers' => array('oauthio' => http_build_query($headers)),
+                'qs' => is_array($filters) ? $filters : null
+            ));
+        }
+        return $response;
+    }
     
     public function get($url) {
         return (array) $this->makeRequest('GET', $url)->body;
@@ -65,5 +97,9 @@ class Request {
     
     public function patch($url, $fields) {
         return (array) $this->makeRequest('PATCH', $url, $fields)->body;
+    }
+
+    public function me($filters=null) {
+        return (array) $this->makeMeRequest($filters)->body;
     }
 }

@@ -44,6 +44,7 @@ class RequestsTest extends PHPUnit_Framework_TestCase {
             $this->assertTrue(method_exists($request_object, 'put'));
             $this->assertTrue(method_exists($request_object, 'del'));
             $this->assertTrue(method_exists($request_object, 'patch'));
+            $this->assertTrue(method_exists($request_object, 'me'));
         } else {
             $this->fail('$oauth->create() does not exist');
         }
@@ -214,10 +215,6 @@ class RequestsTest extends PHPUnit_Framework_TestCase {
         if (method_exists($this->oauth, 'create')) {
             $request_object = $this->oauth->create('someprovider');
             
-            $fields = array(
-                'message' => 'Hello World'
-            );
-            
             $this->request_mock->expects($this->at(0))->method('make_request')->will($this->returnCallback(function ($params) {
                 
                 $this->assertEquals('https://oauth.io/request/someprovider/%2Fsome_address', $params['url']);
@@ -243,6 +240,42 @@ class RequestsTest extends PHPUnit_Framework_TestCase {
             
             $this->assertTrue(is_array($response));
             $this->assertEquals('true', $response['result']);
+        } else {
+            $this->fail('$oauth->create() does not exist');
+        }
+    }
+
+    public function testRequestObjectMeSendsAGetHttpRequestToTheMeEndpoint() {
+        if (method_exists($this->oauth, 'create')) {
+            $request_object = $this->oauth->create('someprovider');
+            
+            $this->request_mock->expects($this->at(0))->method('make_request')->will($this->returnCallback(function ($params) {
+                
+                $this->assertEquals('https://oauth.io/auth/someprovider/me', $params['url']);
+
+                $this->assertEquals('GET', $params['method']);
+
+                $this->assertEquals('name', $params['qs'][0]);
+
+                $this->assertTrue(isset($params['headers']));
+                $this->assertTrue(isset($params['headers']['oauthio']));
+                
+                $oauthio = array();
+                parse_str($params['headers']['oauthio'], $oauthio);
+                
+                $this->assertEquals('somekey', $oauthio['k']);
+                $this->assertEquals('someaccesstoken', $oauthio['access_token']);
+
+                return (object)array(
+                    'body' => (object)array(
+                        'name' => 'Jean-René Dupont'
+                    )
+                );
+            }));
+            $response = $request_object->me(array('name'));
+            
+            $this->assertTrue(is_array($response));
+            $this->assertEquals('Jean-René Dupont', $response['name']);
         } else {
             $this->fail('$oauth->create() does not exist');
         }

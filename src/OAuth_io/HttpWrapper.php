@@ -17,6 +17,10 @@ class HttpWrapper {
 		$headers = $options['headers'];
 		$body = isset($options['body']) ? $options['body'] : '';
 		$response = null;
+		if (isset($options['qs'])) {
+			$qs = http_build_query($options['qs']);
+			$url .= '?' . $qs;
+		}
 		\Unirest::verifyPeer($injector->ssl_verification);
 		if ($options['method'] == 'GET') {
 			$response = \Unirest::get($url, $headers);
