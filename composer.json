@@ -2,10 +2,10 @@
     "name": "oauth-io/oauth",
     "description": "OAuth that just works !",
     "license": "Apache2",
-    "version": "0.0.1",
+    "version": "0.1.0",
     "authors": [
         {
-            "name": "Antoine Jackson",
+            "name": "oauth-io",
             "email": "support@oauth.io"
         }
     ],
