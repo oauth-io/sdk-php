@@ -38,7 +38,7 @@ You will soon be able to install it through Composer by adding the following dep
 ```json
  "require": {
         ...
-        "oauth-io/oauth": "dev-master"
+        "oauth-io/oauth": "0.1.0"
         ...
     },
 ```
