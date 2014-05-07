@@ -4,6 +4,7 @@ namespace OAuth_io;
 class OAuth {
     
     private $injector;
+    private $initialized = false;
     
     /**
      *
@@ -50,6 +51,7 @@ class OAuth {
         $this->injector->config['app_key'] = $key;
         $this->injector->config['app_secret'] = $secret;
         $this->initSession();
+        $this->initialized = true;
     }
     
     public function getAppKey() {
@@ -79,6 +81,9 @@ class OAuth {
     }
     
     public function auth($code) {
+        if (!$this->initialized) {
+            throw new NotInitializedException('You must initialize the OAuth instance.');
+        }
         $request = $this->injector->getRequest();
         $response = $request->make_request(array(
             'method' => 'POST',
@@ -93,14 +98,17 @@ class OAuth {
             )
         ));
         $result = $response->body;
-
+        
         if (isset($result->provider)) {
-            $this->injector->session['oauthio']['auth'][$result->provider] = json_decode(json_encode($result), true);
+            $this->injector->session['oauthio']['auth'][$result->provider] = json_decode(json_encode($result) , true);
         }
-        return json_decode(json_encode($result), true);
+        return json_decode(json_encode($result) , true);
     }
     
     public function create($provider) {
+        if (!$this->initialized) {
+            throw new NotInitializedException('You must initialize the OAuth instance.');
+        }
         if (isset($this->injector->session['oauthio']['auth'][$provider])) {
             $request = new Request();
             $request->initialize($provider);

@@ -54,4 +54,28 @@ class InitialTest extends PHPUnit_Framework_TestCase {
 			$this->fail('methods are missing');
 		}
 	}
+
+	public function testCallingAuthOrCreateWhenNotInitializedThrowsAnException() {
+		if (method_exists($this->oauth, 'initialize') ) {
+			$passed_auth = false;
+			$passed_create = false;
+			try {
+				$this->oauth->auth('somecode');	
+			} catch (\OAuth_io\NotInitializedException $e) {
+				$passed_auth = true;
+			}
+
+			try {
+				$this->oauth->create('somecode');	
+			} catch (\OAuth_io\NotInitializedException $e) {
+				$passed_create = true;
+			}
+
+
+			$this->assertTrue($passed_auth);
+			$this->assertTrue($passed_create);
+		} else {
+			$this->fail('methods are missing');
+		}
+	}
 }
