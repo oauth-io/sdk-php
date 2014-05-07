@@ -78,7 +78,7 @@ use OAuth_io\OAuth;
 
 **Initialization**
 
-To initialize the SDK, you have to give it your OAuth.io's app's key and secret (you can grab them on the [oauth.io Key-Manager][https://oauth.io/key-manager]) :
+To initialize the SDK, you have to give it your OAuth.io's app's key and secret (you can grab them on the [oauth.io Key-Manager](https://oauth.io/key-manager)) :
 
 ```php
 <?php
@@ -116,11 +116,11 @@ You need to provide your front-end with a state token, that will be used to exch
 
 ```php
 <?php
-$token = $oauth->generateToken();
+$token = $oauth->generateStateToken();
 //?>
 ```
 
-The `generateToken()` method returns a unique 23 character token. This token is stored in the session, and used to communicate with oauth.io.
+The `generateStateToken()` method returns a unique token. This token is stored in the session, and used to communicate with oauth.io.
 
 You have to give this token to your front-end, where you can show the user a popup for him to log in to the provider and accept your app's permissions (see further down to see how to do that).
 

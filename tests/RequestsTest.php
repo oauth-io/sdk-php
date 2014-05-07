@@ -20,7 +20,7 @@ class RequestsTest extends PHPUnit_Framework_TestCase {
         $this->oauth = new OAuth();
         
         $this->oauth->initialize('somekey', 'somesecret');
-        $this->token = $this->oauth->generateToken();
+        $this->token = $this->oauth->generateStateToken();
         
         $response = (object)array(
             'body' => (object)array(
@@ -276,6 +276,21 @@ class RequestsTest extends PHPUnit_Framework_TestCase {
             
             $this->assertTrue(is_array($response));
             $this->assertEquals('Jean-René Dupont', $response['name']);
+        } else {
+            $this->fail('$oauth->create() does not exist');
+        }
+    }
+
+    public function testCreateThrowsAnExceptionWhenTheUserIsNotAuthenticatedOnTheAskedProvider() {
+        if (method_exists($this->oauth, 'create')) {
+            $passed = false;
+            try {
+                $request_object = $this->oauth->create('someprovider2');    
+            } catch (OAuth_io\NotAuthenticatedException $e) {
+                $passed = true;
+            }
+
+            $this->assertTrue($passed);
         } else {
             $this->fail('$oauth->create() does not exist');
         }

@@ -23,7 +23,7 @@ class AuthTest extends PHPUnit_Framework_TestCase {
         );
         $this->oauth = new OAuth();
         $this->oauth->initialize('somekey', 'somesecret');
-        $this->token = $this->oauth->generateToken();
+        $this->token = $this->oauth->generateStateToken();
     }
     
     public function testAuthMethodExists() {

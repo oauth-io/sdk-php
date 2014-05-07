@@ -17,7 +17,7 @@ class Request {
     private function makeRequest($method, $url, $body_fields = null) {
         $response = null;
         if (!isset($this->injector->session['oauthio']['auth'][$this->provider])) {
-            throw new \Exception('Error');
+            throw new NotAuthenticatedException('The user is not authenticated for that provider');
         } else {
             $prov_data = $this->injector->session['oauthio']['auth'][$this->provider];
             $requester = $this->injector->getRequest();
@@ -100,6 +100,7 @@ class Request {
     }
 
     public function me($filters=null) {
-        return (array) $this->makeMeRequest($filters)->body->data;
+        $body = $this->makeMeRequest($filters)->body;
+        return (array) $body;
     }
 }

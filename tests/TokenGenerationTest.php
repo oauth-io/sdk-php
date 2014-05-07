@@ -22,32 +22,32 @@ class TokenGenerationTest extends PHPUnit_Framework_TestCase {
 	}
 
 	public function testTokenGeneratorExists() {
-		$this->assertTrue(method_exists($this->oauth, 'generateToken'));
+		$this->assertTrue(method_exists($this->oauth, 'generateStateToken'));
 	}
 
 	public function testTokenGeneratorResultFormat() {
-		if (method_exists($this->oauth, 'generateToken')) {
+		if (method_exists($this->oauth, 'generateStateToken')) {
 
-			$token1 = $this->oauth->generateToken();
-			$token2 = $this->oauth->generateToken();
+			$token1 = $this->oauth->generateStateToken();
+			$token2 = $this->oauth->generateStateToken();
 
 			$this->assertTrue(is_string($token1) && is_string($token2));
 			$this->assertTrue($token1 !== $token2);
 		} else {
-			$this->fail('$this->oauth->generateToken does not exist');
+			$this->fail('$this->oauth->generateStateToken does not exist');
 		}
 	}
 
 	public function testTokenGeneratorSessionStorage() {
-		if (true || method_exists($this->oauth, 'generateToken')) {
+		if (true || method_exists($this->oauth, 'generateStateToken')) {
 
 
-			$token1 = $this->oauth->generateToken();
+			$token1 = $this->oauth->generateStateToken();
 
 			$this->assertTrue(isset($this->injector->session["oauthio"]["tokens"][0]));
 			$this->assertEquals($this->injector->session["oauthio"]["tokens"][0], $token1);
 
-			$token2 = $this->oauth->generateToken();
+			$token2 = $this->oauth->generateStateToken();
 			$this->assertTrue(isset($this->injector->session["oauthio"]["tokens"][0]));
 			$this->assertEquals($this->injector->session["oauthio"]["tokens"][0], $token2);
 

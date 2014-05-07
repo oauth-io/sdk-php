@@ -69,7 +69,7 @@ class OAuth {
         }
     }
     
-    public function generateToken() {
+    public function generateStateToken() {
         $unique_token = sha1(uniqid('', true));
         array_unshift($this->injector->session['oauthio']['tokens'], $unique_token);
         if (count($this->injector->session['oauthio']['tokens']) > 4) {
@@ -101,17 +101,12 @@ class OAuth {
     }
     
     public function create($provider) {
-        
         if (isset($this->injector->session['oauthio']['auth'][$provider])) {
             $request = new Request();
             $request->initialize($provider);
-            
             return $request;
         } else {
-            
-            //TODO: throw exception here
-            
-            
+            throw new NotAuthenticatedException('The user is not authenticated for that provider');
         }
     }
 }
