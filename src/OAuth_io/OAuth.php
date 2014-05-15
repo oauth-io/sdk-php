@@ -10,12 +10,18 @@ class OAuth {
      *
      *
      */
-    public function __construct(&$session = null, $ssl_verification = true) {
+    public function __construct() {
         $this->injector = Injector::getInstance();
+    }
+
+    public function setSslVerification($ssl_verification) {
+        $this->injector->ssl_verification = $ssl_verification;
+    }
+
+    public function setSession(&$session) {
         if (is_array($session)) {
             $this->injector->session = & $session;
         }
-        $this->injector->ssl_verification = $ssl_verification;
     }
     
     /**
