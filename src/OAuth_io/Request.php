@@ -69,6 +69,13 @@ class Request {
                 $headers['oauthv1'] = '1';
             }
 
+
+            if (is_array($filters)) {
+                $filters = array(
+                    'filter' => join(',', $filters)
+                );
+            }
+
             $response = $requester->make_request(array(
                 'method' => 'GET',
                 'url' => $this->injector->config['oauthd_url'] . '/auth/' . $this->provider . '/me',
