@@ -80,27 +80,27 @@ class Request {
     }
     
     public function get($url) {
-        return (array) $this->makeRequest('GET', $url)->body;
+        return (array) $this->makeRequest('GET', $url)->body->data;
     }
     
     public function post($url, $fields) {
-        return (array) $this->makeRequest('POST', $url, $fields)->body;
+        return (array) $this->makeRequest('POST', $url, $fields)->body->data;
     }
     
     public function put($url, $fields) {
-        return (array) $this->makeRequest('PUT', $url, $fields)->body;
+        return (array) $this->makeRequest('PUT', $url, $fields)->body->data;
     }
     
     public function del($url) {
-        return (array) $this->makeRequest('DELETE', $url)->body;
+        return (array) $this->makeRequest('DELETE', $url)->body->data;
     }
     
     public function patch($url, $fields) {
-        return (array) $this->makeRequest('PATCH', $url, $fields)->body;
+        return (array) $this->makeRequest('PATCH', $url, $fields)->body->data;
     }
 
     public function me($filters=null) {
-        $body = $this->makeMeRequest($filters)->body;
+        $body = $this->makeMeRequest($filters)->body->data;
         return (array) $body;
     }
 }
