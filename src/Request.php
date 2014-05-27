@@ -1,29 +1,32 @@
 <?php
 namespace OAuth_io;
 
-class Request {
-    
+class Request
+{
     private $injector;
     private $provider;
-    
-    public function __construct() {
+
+    public function __construct()
+    {
         $this->injector = Injector::getInstance();
     }
-    
-    public function initialize($provider) {
+
+    public function initialize($provider)
+    {
         $this->provider = $provider;
     }
-    
-    private function makeRequest($method, $url, $body_fields = null) {
+
+    private function makeRequest($method, $url, $body_fields = null)
+    {
         $response = null;
         if (!isset($this->injector->session['oauthio']['auth'][$this->provider])) {
-            throw new NotAuthenticatedException('The user is not authenticated for that provider');
+            throw new Exception\NotAuthenticatedException('The user is not authenticated for that provider');
         } else {
             $prov_data = $this->injector->session['oauthio']['auth'][$this->provider];
             $requester = $this->injector->getRequest();
 
             $tokens = array();
-            
+
             $headers = array(
                 'k' => $this->injector->config['app_key']
             );
@@ -44,18 +47,20 @@ class Request {
                 'body' => is_array($body_fields) ? $body_fields : null
             ));
         }
+
         return $response;
     }
 
-    private function makeMeRequest($filters) {
+    private function makeMeRequest($filters)
+    {
         if (!isset($this->injector->session['oauthio']['auth'][$this->provider])) {
-            throw new \Exception('Error');
+            throw new Exception\NotAuthenticatedException('The user is not authenticated for provider ' . $this->provider);
         } else {
             $prov_data = $this->injector->session['oauthio']['auth'][$this->provider];
             $requester = $this->injector->getRequest();
 
             $tokens = array();
-            
+
             $headers = array(
                 'k' => $this->injector->config['app_key']
             );
@@ -76,31 +81,39 @@ class Request {
                 'qs' => is_array($filters) ? $filters : null
             ));
         }
+
         return $response;
     }
-    
-    public function get($url) {
+
+    public function get($url)
+    {
         return (array) $this->makeRequest('GET', $url)->body;
     }
-    
-    public function post($url, $fields) {
+
+    public function post($url, $fields)
+    {
         return (array) $this->makeRequest('POST', $url, $fields)->body;
     }
-    
-    public function put($url, $fields) {
+
+    public function put($url, $fields)
+    {
         return (array) $this->makeRequest('PUT', $url, $fields)->body;
     }
-    
-    public function del($url) {
+
+    public function del($url)
+    {
         return (array) $this->makeRequest('DELETE', $url)->body;
     }
-    
-    public function patch($url, $fields) {
+
+    public function patch($url, $fields)
+    {
         return (array) $this->makeRequest('PATCH', $url, $fields)->body;
     }
 
-    public function me($filters=null) {
+    public function me($filters=null)
+    {
         $body = $this->makeMeRequest($filters)->body;
+
         return (array) $body;
     }
 }
