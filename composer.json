@@ -12,11 +12,13 @@
     "minimum-stability": "dev",
     "require": {
         "php": ">=5.3.0",
-        "mashape/unirest-php" : "dev-master"
+        "mashape/unirest-php" : "dev-master",
+        "fabpot/php-cs-fixer": "dev-master"
     },
     "autoload": {
-        "psr-0": {
-            "OAuth_io": "src/"
+        "psr-4": {
+            "OAuth_io\\": "src/"
+            "OAuth_ioTest\\": "test/"
         }
     },
     "require-dev": {
