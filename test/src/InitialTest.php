@@ -2,8 +2,6 @@
 
 namespace OAuth_ioTest;
 
-require_once __DIR__ . '/../vendor/autoload.php';
-
 use OAuth_io\OAuth;
 
 class InitialTest extends \PHPUnit_Framework_TestCase
@@ -13,14 +11,6 @@ class InitialTest extends \PHPUnit_Framework_TestCase
     protected function setUp()
     {
         $this->oauth = new OAuth();
-    }
-
-    public function testGetVersionReturnsVersion()
-    {
-        $version = json_decode(file_get_contents('./composer.json'), true);
-        $version = $version["version"];
-
-        $this->assertEquals($this->oauth->getVersion(), $version);
     }
 
     public function testInitializeSetsKeyAndSecret()

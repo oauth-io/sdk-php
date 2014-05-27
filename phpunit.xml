@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<phpunit colors="true">
+<phpunit colors="true" bootstrap="./test/Bootstrap.php">
     <testsuites>
         <testsuite name="Application Test Suite">
             <directory>./test</directory>
@@ -7,9 +7,9 @@
         </testsuite>
     </testsuites>
     <filter>
-		<blacklist>
-		    <directory>./vendor</directory>
+        <blacklist>
+            <directory>./vendor</directory>
             <file>./src/OAuth_io/Injector.php</file>
-		</blacklist>
-	</filter>
+        </blacklist>
+    </filter>
 </phpunit>

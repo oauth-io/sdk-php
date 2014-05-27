@@ -17,8 +17,8 @@
     },
     "autoload": {
         "psr-4": {
-            "OAuth_io\\": "src/"
-            "OAuth_ioTest\\": "test/"
+            "OAuth_io\\": "src/",
+            "OAuth_ioTest\\": "test/src/"
         }
     },
     "require-dev": {

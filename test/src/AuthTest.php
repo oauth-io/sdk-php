@@ -2,8 +2,6 @@
 
 namespace OAuth_ioTest;
 
-require_once __DIR__ . '/../vendor/autoload.php';
-
 use OAuth_io\OAuth;
 use OAuth_io\Injector;
 
