@@ -217,10 +217,10 @@ sdk/folder$ composer install
 Testing the SDK
 ---------------
 
-We use PHPUnit to test the SDK. To test it, just run the following from the SDK root folder :
+We use PHPUnit to test the SDK. To run the unit tests execute the following from the SDK root folder:
 
 ```bash
-$ ./vendor/phpunit/phpunit/phpunit
+$ vendor/bin/phpunit
 ```
 
 License
