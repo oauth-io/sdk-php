@@ -1,23 +1,26 @@
 <?php
-require_once __DIR__ . '/../vendor/autoload.php';
+
+namespace OAuth_ioTest;
 
 use OAuth_io\OAuth;
 use OAuth_io\Injector;
 
-class AuthTest extends PHPUnit_Framework_TestCase {
+class AuthTest extends \PHPUnit_Framework_TestCase
+{
     protected $oauth;
     protected $token;
     protected $adapter_mock;
     protected $session;
     protected $injector;
-    
-    protected function setUp() {
+
+    protected function setUp()
+    {
         $this->injector = $this->getMockBuilder('OAuth_io\Injector')->getMock();
-        OAuth_io\Injector::setInstance($this->injector);
+        \OAuth_io\Injector::setInstance($this->injector);
         $this->request_mock = $this->getMockBuilder('OAuth_io\HttpWrapper')->getMock();
 
         $this->injector->expects($this->any())->method('getRequest')->will($this->returnValue($this->request_mock));
-        
+
         $this->injector->session = array(
             'hello' => 'world'
         );
@@ -25,12 +28,14 @@ class AuthTest extends PHPUnit_Framework_TestCase {
         $this->oauth->initialize('somekey', 'somesecret');
         $this->token = $this->oauth->generateStateToken();
     }
-    
-    public function testAuthMethodExists() {
+
+    public function testAuthMethodExists()
+    {
         $this->assertTrue(method_exists($this->oauth, 'auth'));
     }
-    
-    public function testAuthMethodCallsOauthioWithCredentialsAndCode() {
+
+    public function testAuthMethodCallsOauthioWithCredentialsAndCode()
+    {
         if (method_exists($this->oauth, 'auth')) {
             $fields = array(
                 'code' => 'somecode',
@@ -38,13 +43,13 @@ class AuthTest extends PHPUnit_Framework_TestCase {
                 'secret' => 'somesecret'
             );
 
-            $res = new stdClass();
+            $res = new \stdClass();
             $res->access_token = 'someaccesstoken';
             $res->state = $this->token;
             $res->provider = 'some_provider';
-            $response = new StdClass();
+            $response = new \stdClass();
             $response->body = $res;
-           
+
             $this->request_mock->expects($this->once())->method('make_request')->will($this->returnValue($response));
 
             $result = $this->oauth->auth('somecode');
@@ -54,19 +59,20 @@ class AuthTest extends PHPUnit_Framework_TestCase {
             $this->fail('OAuth::auth() does not exist');
         }
     }
-    
-    public function testAuthMethodSetsProviderFieldInSessions() {
+
+    public function testAuthMethodSetsProviderFieldInSessions()
+    {
         if (method_exists($this->oauth, 'auth')) {
             $fields = array(
                 'code' => 'somecode',
                 'key' => 'somekey',
                 'secret' => 'somesecret'
             );
-            $res = new stdClass();
+            $res = new \stdClass();
             $res->access_token = 'someaccesstoken';
             $res->state = $this->token;
             $res->provider = 'blabla';
-            $response = new StdClass();
+            $response = new \stdClass();
             $response->body = $res;
 
             $this->request_mock->expects($this->once())->method('make_request')->will($this->returnValue($response));

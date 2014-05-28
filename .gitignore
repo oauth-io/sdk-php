@@ -2,3 +2,4 @@ vendor/*
 coverage/*
 .DS_Store*
 composer.lock
+composer.phar

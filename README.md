@@ -30,51 +30,14 @@ To authenticate a user, the flow follows these steps :
 - oauth.io responds with the access_token, that you can then store on your backend as long as it's valid
 - You can then make requests to the API using that access token, directly from your backend
 
-Installation
+
+Installation 
 ------------
 
-You will soon be able to install it through Composer by adding the following dependency to your composer.json :
-
-```json
- "require": {
-        ...
-        "oauth-io/oauth": "0.1.0"
-        ...
-    },
-```
-
-Then run in the console :
-
 ```sh
-$ composer install
+$ php composer.phar require oauth-io/oauth 0.1.0
 ```
 
-How to use it ?
----------------
-
-The `OAuth` class is stored in the `OAuth_io` namespace. You need to include it in your file like this (make sure you have required the Composer autoloader file) :
-
-```php
-<?php
-
-require_once '/path/to/autoload.php';
-
-use OAuth_io\OAuth;
-
-//?>
-```
-
-**PSR-0 support**
-
-If you're using Composer with an autoloader, you can use the PSR-0 notation to use this package. Just put the following code at the top of your script :
-
-```php
-<?php
-
-use OAuth_io\OAuth;
-
-//?>
-```
 
 **Initialization**
 
@@ -82,6 +45,9 @@ To initialize the SDK, you have to give it your OAuth.io's app's key and secret 
 
 ```php
 <?php
+
+use OAuth_io\OAuth;
+
 $oauth = new OAuth();
 $oauth->initialize('your_key', 'your_secret');
 //?>
@@ -217,10 +183,10 @@ sdk/folder$ composer install
 Testing the SDK
 ---------------
 
-We use PHPUnit to test the SDK. To test it, just run the following from the SDK root folder :
+We use PHPUnit to test the SDK. To run the unit tests execute the following from the SDK root folder:
 
 ```bash
-$ ./vendor/phpunit/phpunit/phpunit
+$ vendor/bin/phpunit
 ```
 
 License
