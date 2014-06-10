@@ -7,9 +7,9 @@ This SDK allows you to use OAuth.io's server-side flow from a PHP backend, to ha
 
 You can use it with one of our front-end SDKs ([JavaScript][1], [PhoneGap][2], [iOs][3], [Android][4]), which will handle the user input for the OAuth flow.
 
-This SDK is still under heavy development and some of the features described below may not work yet. You can get nightlies from the [develop branch](https://github.com/oauth-io/sdk-php/tree/develop) on the SDK's github page.
+The current version of the SDK is `0.2.0`. Older versions are deprecated.
 
-A release will be posted soon.
+You can also get nightlies by checking out our `develop` branch.
 
 Common use-Case
 ---------------
@@ -30,15 +30,17 @@ To authenticate a user, the flow follows these steps :
 - oauth.io responds with the access_token, that you can then store on your backend as long as it's valid
 - You can then make requests to the API using that access token, directly from your backend
 
+As of `0.2.0` it is possible to get an automatically refreshed access token when a refresh token is available.
+
 Installation
 ------------
 
-You will soon be able to install it through Composer by adding the following dependency to your composer.json :
+You can install it through Composer by adding the following dependency to your composer.json :
 
 ```json
  "require": {
         ...
-        "oauth-io/oauth": "0.1.0"
+        "oauth-io/oauth": "0.2.0"
         ...
     },
 ```
@@ -126,17 +128,27 @@ You have to give this token to your front-end, where you can show the user a pop
 
 **Auth the user**
 
-To be able to make requests to a provider's API using its access token, you have to call the `auth(code)` method. The code is retrieved from OAuth.io through the from the front-end SDK (see further down). You need to create an endpoint to allow the front-end to send it to the backend.
+To be able to make requests to a provider's API using its access token, you have to call the `auth(provider, options)` method first. This method creates a request object from either a code you got from the front-end SDK (for the first time authentication), the session (if the user was authenticated during the same session), or a credentials array that you saved earlier.
 
-Once you have that code, you can call the method like this :
+To get a request object from a code (which automatically fills up the session for further use in other endpoints), you can do like this :
 
 ```php
-$result = $oauth->auth($code);
+$request_object = $oauth->auth('the_provider', array(
+    'code': $code
+));
 ```
 
-`$result` is an array containing the access token, which you can use your own way if you want, or thanks to the SDK's request system (see further down).
+`$request_object` is an object that allows you to perform requests (see further down to learn how to), and that contains the user's credentials.
 
-**Retrieving the code from the front-end**
+You can get the credentials array if you need to save them for later use (or for a cron) like this :
+
+```php
+$credentials = $request_object->getCredentials();
+```
+
+The `$credentials` array contains the access token, refresh token and other information returned by the provider.
+
+**Retrieving a code from the front-end**
 
 ```JavaScript
 //In the front end, using the JavaScript SDK :
@@ -162,15 +174,7 @@ OAuth.popup('a_provider', {
 
 **Making requests to the API**
 
-Once the user is authenticated, you can create a request object from the SDK `create('provider')` method :
-
-```php
-<?php
-$request_object = $oauth->create('some_provider');
-//?>
-```
-
-Then, you can make get, post, put, delete and patch requests to the API like this :
+Once you have a request object, you can make requests to the API.
 
 ```php
 <?php
@@ -196,6 +200,52 @@ $result = $facebook_requester->me(array('firstname', 'lastname', 'email'));
 
 You can refer to the OAuth.io me() feature to get more information about the fields that are returned by this method.
 
+**Using the session**
+
+Usually, you'll want to make calls to the API several times while the user is connected to your app. Once you've authenticated the user once with a code, the session is automatically configured to work with the SDK.
+
+Thus, you just need to do this to get a request object:
+
+```php
+$request_object = $oauth->auth('the_provider');
+```
+
+**Saving credentials**
+
+You can also save the user's credentials to make requests in a cron. You can get the credentials array from a request object like this :
+
+```php
+$credentials = $request_object->getCredentials();
+// Here save the $credentials array for later use
+```
+
+
+Then, when you want to reuse these credentials, you can rebuild a $request_object from them:
+
+```php
+$request_object = $oauth->auth('the_provider', array(
+    'credentials' => $credentials
+));
+```
+
+**Refreshing the token**
+
+If a refresh token is available and the access token is expired, the `auth` method will automatically use that refresh token to get a new access token.
+
+You can force the renewal by passing the `force_refresh` field in the options array:
+
+```php
+$request_object = $oauth->auth('the_provider', array(
+    'credentials' => $credentials,
+    'force_refresh' => true
+));
+```
+
+You can also directly refresh a credentials array like this:
+
+```php
+$refreshed_credentials = $oauth->refreshCredentials($old_credentials);
+```
 
 Contributing to this SDK
 ------------------------
@@ -206,7 +256,16 @@ Please discuss issues and features on Github Issues. We'll be happy to answer to
 
 **Pull requests**
 
-You are welcome to fork this SDK and to make pull requests on Github. We'll review each of them, and integrate in a future release if they are relevant.
+You are welcome to fork and make pull requests. We appreciate the time you spend working on this project and we will be happy to review your code and merge it if it brings nice improvements :)
+
+If you want to do a pull request, please mind these simple rules :
+
+- *One feature per pull request*
+- *Write lear commit messages*
+- *Unit test your feature* : if it's a bug fix for example, write a test that proves the bug exists and that your fix resolves it.
+- *Write a clear description of the pull request*
+
+If you do so, we'll be able to merge your pull request more quickly :)
 
 The SDK is written as a Composer module. You can install its dependencies like this :
 
