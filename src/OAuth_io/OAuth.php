@@ -93,7 +93,7 @@ class OAuth {
     }
     
     public function refreshCredentials($credentials, $force = false) {
-        $date = new DateTime();
+        $date = new \DateTime();
         if (isset($credentials['refresh_token']) && ((isset($credentials['expires']) && $date->getTimestamp() > $credentials['expires']) || $force)) {
             $request = $this->injector->getRequest();
             $response = $request->make_request(array(
@@ -140,7 +140,7 @@ class OAuth {
             $credentials = json_decode(json_encode($response->body) , true);
             if (isset($credentials['expires_in'])) {
                 $date = new \DateTime();
-                $credentials['expires'] = $date->getTimestamp() + $credentials->expires_in;
+                $credentials['expires'] = $date->getTimestamp() + $credentials['expires_in'];
             }
             
             if (isset($credentials['provider'])) {
@@ -151,8 +151,8 @@ class OAuth {
         } else {
             $credentials = $this->injector->session['oauthio']['auth'][$provider];
         }
-        $credentials = $this->refreshCredentials($credentials, $options['force_refresh']);
-        $request_object = new Request($credentials);
+        $credentials = $this->refreshCredentials($credentials, isset($options['force_refresh']) ? $options['force_refresh'] : false);
+        $request_object = new RequestObject($credentials);
         
         return $request_object;
     }
