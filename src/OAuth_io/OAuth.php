@@ -108,7 +108,7 @@ class OAuth {
                 'method' => 'POST',
                 'url' => $this->injector->config['oauthd_url'] . '/auth/access_token',
                 'body' => http_build_query(array(
-                    'code' => $code,
+                    'code' => $options['code'],
                     'key' => $this->injector->config['app_key'],
                     'secret' => $this->injector->config['app_secret']
                 )) ,
@@ -116,14 +116,15 @@ class OAuth {
                     'Content-Type' => 'application/x-www-form-urlencoded'
                 )
             ));
-            $credentials = $response->body;
-            if (isset($credentials->provider)) {
-                $this->injector->session['oauthio']['auth'][$credentials->provider] = json_decode(json_encode($credentials) , true);
+            $credentials = json_decode(json_encode($response->body), true);
+
+            if (isset($credentials['provider'])) {
+                $this->injector->session['oauthio']['auth'][$credentials['provider']] = $credentials;
             }
         } else if (isset($options['credentials'])) {
             $credentials = $options['credentials'];
         } else {
-            $credentials = $this->injector->session['oauthio']['auth']['provider'];
+            $credentials = $this->injector->session['oauthio']['auth'][$provider];
         }
         $credentials = $this->refreshCredentials($credentials);
         $request = new Request($credentials);
