@@ -14,6 +14,10 @@ class RequestObject {
     public function getCredentials() {
         return $this->credentials;
     }
+
+    public function wasRefreshed() {
+        return $this->credentials['refreshed'] == true;
+    }
     
     private function object_to_array($obj) {
         return json_decode(json_encode($obj), true);
@@ -116,7 +120,7 @@ class RequestObject {
     }
     
     public function patch($url, $fields) {
-        $response = $this->makeRequest('PATCH', $url, $fields)->body->data;
+        $response = $this->makeRequest('PATCH', $url, $fields)->body;
         return $this->object_to_array($response);
     }
     

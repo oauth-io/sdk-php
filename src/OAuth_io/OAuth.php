@@ -94,13 +94,14 @@ class OAuth {
     
     public function refreshCredentials($credentials, $force = false) {
         $date = new \DateTime();
+        $credentials['refreshed'] = false;
         if (isset($credentials['refresh_token']) && ((isset($credentials['expires']) && $date->getTimestamp() > $credentials['expires']) || $force)) {
             $request = $this->injector->getRequest();
             $response = $request->make_request(array(
                 'method' => 'POST',
                 'url' => $this->injector->config['oauthd_url'] . '/auth/refresh_token/' . $credentials['provider'],
                 'body' => http_build_query(array(
-                    'token' => $options['refresh_token'],
+                    'token' => $credentials['refresh_token'],
                     'key' => $this->injector->config['app_key'],
                     'secret' => $this->injector->config['app_secret']
                 )) ,
@@ -113,6 +114,8 @@ class OAuth {
             foreach ($refreshed as $k => $v) {
                 $credentials[$k] = $v;
             }
+            $credentials['refreshed'] = true;
+
         }
         return $credentials;
     }
@@ -149,24 +152,15 @@ class OAuth {
         } else if (isset($options['credentials'])) {
             $credentials = $options['credentials'];
         } else {
-            $credentials = $this->injector->session['oauthio']['auth'][$provider];
+            if (isset($this->injector->session['oauthio']['auth'][$provider])) {
+                $credentials = $this->injector->session['oauthio']['auth'][$provider];
+            } else {
+                throw new NotAuthenticatedException('The user is not authenticated for that provider');
+            }
         }
         $credentials = $this->refreshCredentials($credentials, isset($options['force_refresh']) ? $options['force_refresh'] : false);
         $request_object = new RequestObject($credentials);
         
         return $request_object;
-    }
-    
-    public function create($provider) {
-        if (!$this->initialized) {
-            throw new NotInitializedException('You must initialize the OAuth instance.');
-        }
-        if (isset($this->injector->session['oauthio']['auth'][$provider])) {
-            $request = new Request();
-            $request->initialize($provider);
-            return $request;
-        } else {
-            throw new NotAuthenticatedException('The user is not authenticated for that provider');
-        }
     }
 }
