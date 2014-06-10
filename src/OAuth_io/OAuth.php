@@ -14,10 +14,16 @@ class OAuth {
         $this->injector = Injector::getInstance();
     }
 
+    /**
+     * 
+     */
     public function setSslVerification($ssl_verification) {
         $this->injector->ssl_verification = $ssl_verification;
     }
 
+    /**
+     * 
+     */
     public function setSession(&$session) {
         if (is_array($session)) {
             $this->injector->session = & $session;
@@ -85,30 +91,44 @@ class OAuth {
         }
         return $unique_token;
     }
+
+    public function refreshCredentials($credentials) {
+        return $credentials;
+    }
     
-    public function auth($code) {
+    public function auth($provider, $options = array()) {
+        // $options can contain code, credentials, or nothing. If nothing --> session call
+
         if (!$this->initialized) {
             throw new NotInitializedException('You must initialize the OAuth instance.');
         }
-        $request = $this->injector->getRequest();
-        $response = $request->make_request(array(
-            'method' => 'POST',
-            'url' => $this->injector->config['oauthd_url'] . '/auth/access_token',
-            'body' => http_build_query(array(
-                'code' => $code,
-                'key' => $this->injector->config['app_key'],
-                'secret' => $this->injector->config['app_secret']
-            )) ,
-            'headers' => array(
-                'Content-Type' => 'application/x-www-form-urlencoded'
-            )
-        ));
-        $result = $response->body;
-        
-        if (isset($result->provider)) {
-            $this->injector->session['oauthio']['auth'][$result->provider] = json_decode(json_encode($result) , true);
+        if (isset($options['code'])) {
+            $request = $this->injector->getRequest();
+            $response = $request->make_request(array(
+                'method' => 'POST',
+                'url' => $this->injector->config['oauthd_url'] . '/auth/access_token',
+                'body' => http_build_query(array(
+                    'code' => $code,
+                    'key' => $this->injector->config['app_key'],
+                    'secret' => $this->injector->config['app_secret']
+                )) ,
+                'headers' => array(
+                    'Content-Type' => 'application/x-www-form-urlencoded'
+                )
+            ));
+            $credentials = $response->body;
+            if (isset($credentials->provider)) {
+                $this->injector->session['oauthio']['auth'][$credentials->provider] = json_decode(json_encode($credentials) , true);
+            }
+        } else if (isset($options['credentials'])) {
+            $credentials = $options['credentials'];
+        } else {
+            $credentials = $this->injector->session['oauthio']['auth']['provider'];
         }
-        return json_decode(json_encode($result) , true);
+        $credentials = $this->refreshCredentials($credentials);
+        $request = new Request($credentials);
+        
+        return $request;
     }
     
     public function create($provider) {

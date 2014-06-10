@@ -4,14 +4,15 @@ namespace OAuth_io;
 class Request {
     
     private $injector;
-    private $provider;
+    private $credentials;
     
-    public function __construct() {
+    public function __construct($credentials = array()) {
         $this->injector = Injector::getInstance();
+        $this->credentials = $credentials;
     }
-    
-    public function initialize($provider) {
-        $this->provider = $provider;
+
+    public function getCredentials() {
+        return $this->credentials;
     }
     
     private function object_to_array($obj) {
@@ -20,10 +21,10 @@ class Request {
     
     private function makeRequest($method, $url, $body_fields = null) {
         $response = null;
-        if (!isset($this->injector->session['oauthio']['auth'][$this->provider])) {
+        if (!isset($this->credentials)) {
             throw new NotAuthenticatedException('The user is not authenticated for that provider');
         } else {
-            $prov_data = $this->injector->session['oauthio']['auth'][$this->provider];
+            $prov_data = $this->credentials;
             $requester = $this->injector->getRequest();
             
             $tokens = array();
@@ -43,7 +44,7 @@ class Request {
             
             $response = $requester->make_request(array(
                 'method' => $method,
-                'url' => $this->injector->config['oauthd_url'] . '/request/' . $this->provider . '/' . urlencode($url) ,
+                'url' => $this->injector->config['oauthd_url'] . '/request/' . $this->credentials['provider'] . '/' . urlencode($url) ,
                 'headers' => array(
                     'oauthio' => http_build_query($headers)
                 ) ,
@@ -54,10 +55,10 @@ class Request {
     }
     
     private function makeMeRequest($filters) {
-        if (!isset($this->injector->session['oauthio']['auth'][$this->provider])) {
+        if (!isset($this->credentials)) {
             throw new \Exception('Error');
         } else {
-            $prov_data = $this->injector->session['oauthio']['auth'][$this->provider];
+            $prov_data = $this->credentials;
             $requester = $this->injector->getRequest();
             
             $tokens = array();
@@ -83,7 +84,7 @@ class Request {
             
             $response = $requester->make_request(array(
                 'method' => 'GET',
-                'url' => $this->injector->config['oauthd_url'] . '/auth/' . $this->provider . '/me',
+                'url' => $this->injector->config['oauthd_url'] . '/auth/' . $this->credentials['provider'] . '/me',
                 'headers' => array(
                     'oauthio' => http_build_query($headers)
                 ) ,
