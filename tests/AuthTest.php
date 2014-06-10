@@ -47,7 +47,10 @@ class AuthTest extends PHPUnit_Framework_TestCase {
            
             $this->request_mock->expects($this->once())->method('make_request')->will($this->returnValue($response));
 
-            $result = $this->oauth->auth('somecode');
+            $request_object = $this->oauth->auth('some_provider', array(
+                'code' => 'some_code'
+            ));
+            $result = $request_object->getCredentials();
             $this->assertEquals($result['access_token'], 'someaccesstoken');
             $this->assertEquals($result['state'], $this->token);
         } else {
@@ -71,7 +74,10 @@ class AuthTest extends PHPUnit_Framework_TestCase {
 
             $this->request_mock->expects($this->once())->method('make_request')->will($this->returnValue($response));
 
-            $result = $this->oauth->auth('somecode');
+            $request_object = $this->oauth->auth('some_provider', array(
+                'code' => 'somecode'
+            ));
+            $result = $request_object->getCredentials();
             $this->assertTrue(isset($this->injector->session['oauthio']['auth']['blabla']));
             $this->assertEquals('someaccesstoken', $this->injector->session['oauthio']['auth']['blabla']['access_token']);
             $this->assertEquals($this->token, $this->injector->session['oauthio']['auth']['blabla']['state']);
@@ -80,4 +86,61 @@ class AuthTest extends PHPUnit_Framework_TestCase {
             $this->fail('OAuth::auth() does not exist');
         }
     }
+
+    public function testTokenIsRefreshedWhenCredentialsAreExpired() {
+        $res = new stdClass();
+        $res->access_token = 'someaccesstoken';
+        $res->state = $this->token;
+        $res->provider = 'some_provider';
+        $res->refresh_token = 'some_refresh_token';
+        $res->expires_in = -50;
+        $response = new StdClass();
+        $response->body = $res;
+
+        $this->request_mock->expects($this->exactly(3))->method('make_request')->will($this->returnValue($response));
+
+        $this->oauth->auth('some_provider', array(
+            'code' => 'somecode'
+        ));
+
+        $request_object = $this->oauth->auth('some_provider');
+
+        $credentials = $request_object->getCredentials();
+        $this->assertTrue($request_object->wasRefreshed());
+        $this->assertTrue($credentials['refreshed']);
+    }
+
+    public function testTokenIsRefreshedWhenForced() {
+        $res = new stdClass();
+        $res->access_token = 'someaccesstoken';
+        $res->state = $this->token;
+        $res->provider = 'some_provider';
+        $res->refresh_token = 'some_refresh_token';
+        $res->expires_in = 10000;
+        $response = new StdClass();
+        $response->body = $res;
+
+        $this->request_mock->expects($this->exactly(2))->method('make_request')->will($this->returnValue($response));
+
+        $this->oauth->auth('some_provider', array(
+            'code' => 'somecode'
+        ));
+
+        $res = new stdClass();
+        $res->access_token = 'someaccesstoken';
+        $res->expires_in = 3600;
+        $res->refresh_token = 'some_refresh_token';
+        $response = new StdClass();
+        $response->body = $res;
+
+        $this->request_mock->expects($this->exactly(1))->method('make_request')->will($this->returnValue($response));
+        $request_object = $this->oauth->auth('some_provider', array(
+            'force_refresh' => true
+        ));
+
+        $credentials = $request_object->getCredentials();
+        $this->assertTrue($request_object->wasRefreshed());
+        $this->assertTrue($credentials['refreshed']);
+    }
+
 }

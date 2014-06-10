@@ -28,6 +28,8 @@ class HttpWrapper {
             $qs = http_build_query($options['qs']);
             $url.= '?' . $qs;
         }
+        $url = str_replace('%2C', ',', $url);
+
         \Unirest::verifyPeer($injector->ssl_verification);
         if ($options['method'] == 'GET') {
             $response = \Unirest::get($url, $headers);
