@@ -163,7 +163,9 @@ The `$credentials` array contains the access token, refresh token and other info
 
 OAuth.initialize('your_key');
 OAuth.popup('a_provider', {
-        state: 'the_token_retrieved_from_your_backend'
+        // The state token you got from the backend 
+        // through $oauth->generateStateToken():
+        state: 'state_token'
     })
 .done(function (r) {
     //You need to give r.code to your backend
@@ -269,7 +271,7 @@ You are welcome to fork and make pull requests. We appreciate the time you spend
 If you want to do a pull request, please mind these simple rules :
 
 - *One feature per pull request*
-- *Write lear commit messages*
+- *Write clear commit messages*
 - *Unit test your feature* : if it's a bug fix for example, write a test that proves the bug exists and that your fix resolves it.
 - *Write a clear description of the pull request*
 
