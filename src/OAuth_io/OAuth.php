@@ -13,16 +13,16 @@ class OAuth {
     public function __construct() {
         $this->injector = Injector::getInstance();
     }
-
+    
     /**
-     * 
+     *
      */
     public function setSslVerification($ssl_verification) {
         $this->injector->ssl_verification = $ssl_verification;
     }
-
+    
     /**
-     * 
+     *
      */
     public function setSession(&$session) {
         if (is_array($session)) {
@@ -91,14 +91,35 @@ class OAuth {
         }
         return $unique_token;
     }
-
-    public function refreshCredentials($credentials) {
+    
+    public function refreshCredentials($credentials, $force = false) {
+        $date = new DateTime();
+        if (isset($credentials['refresh_token']) && ((isset($credentials['expires']) && $date->getTimestamp() > $credentials['expires']) || $force)) {
+            $request = $this->injector->getRequest();
+            $response = $request->make_request(array(
+                'method' => 'POST',
+                'url' => $this->injector->config['oauthd_url'] . '/auth/refresh_token/' . $credentials['provider'],
+                'body' => http_build_query(array(
+                    'token' => $options['refresh_token'],
+                    'key' => $this->injector->config['app_key'],
+                    'secret' => $this->injector->config['app_secret']
+                )) ,
+                'headers' => array(
+                    'Content-Type' => 'application/x-www-form-urlencoded'
+                )
+            ));
+            $refreshed = json_decode(json_encode($response->body) , true);
+            
+            foreach ($refreshed as $k => $v) {
+                $credentials[$k] = $v;
+            }
+        }
         return $credentials;
     }
-    
-    public function auth($provider, $options = array()) {
-        // $options can contain code, credentials, or nothing. If nothing --> session call
 
+    public function auth($provider, $options = array()) {
+        
+        // $options can contain code, credentials, or nothing. If nothing --> session call
         if (!$this->initialized) {
             throw new NotInitializedException('You must initialize the OAuth instance.');
         }
@@ -116,8 +137,12 @@ class OAuth {
                     'Content-Type' => 'application/x-www-form-urlencoded'
                 )
             ));
-            $credentials = json_decode(json_encode($response->body), true);
-
+            $credentials = json_decode(json_encode($response->body) , true);
+            if (isset($credentials['expires_in'])) {
+                $date = new \DateTime();
+                $credentials['expires'] = $date->getTimestamp() + $credentials->expires_in;
+            }
+            
             if (isset($credentials['provider'])) {
                 $this->injector->session['oauthio']['auth'][$credentials['provider']] = $credentials;
             }
@@ -126,10 +151,10 @@ class OAuth {
         } else {
             $credentials = $this->injector->session['oauthio']['auth'][$provider];
         }
-        $credentials = $this->refreshCredentials($credentials);
-        $request = new Request($credentials);
+        $credentials = $this->refreshCredentials($credentials, $options['force_refresh']);
+        $request_object = new Request($credentials);
         
-        return $request;
+        return $request_object;
     }
     
     public function create($provider) {

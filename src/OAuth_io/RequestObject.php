@@ -1,7 +1,7 @@
 <?php
 namespace OAuth_io;
 
-class Request {
+class RequestObject {
     
     private $injector;
     private $credentials;
