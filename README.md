@@ -11,6 +11,14 @@ The current version of the SDK is `0.2.0`. Older versions are deprecated.
 
 You can also get nightlies by checking out our `develop` branch.
 
+Features
+--------
+
+- Server-side OAuth authentication flow
+- Requests to API from the backend
+- Unified user information (`.me()` method) requests when available
+- Access token renewal with the refresh_token when available
+
 Common use-Case
 ---------------
 
