@@ -51,8 +51,9 @@ class OAuth {
      *
      *
      */
-    public function setOAuthdUrl($url) {
+    public function setOAuthdUrl($url, $base = '/auth') {
         $this->injector->config['oauthd_url'] = $url;
+        $this->injector->config['oauthd_base'] = $base;
     }
     
     /**
@@ -99,7 +100,7 @@ class OAuth {
             $request = $this->injector->getRequest();
             $response = $request->make_request(array(
                 'method' => 'POST',
-                'url' => $this->injector->config['oauthd_url'] . '/auth/refresh_token/' . $credentials['provider'],
+                'url' => $this->injector->config['oauthd_url'] . $this->injector->config['oauthd_base'] .  '/refresh_token/' . $credentials['provider'],
                 'body' => http_build_query(array(
                     'token' => $credentials['refresh_token'],
                     'key' => $this->injector->config['app_key'],
@@ -130,7 +131,7 @@ class OAuth {
             $request = $this->injector->getRequest();
             $response = $request->make_request(array(
                 'method' => 'POST',
-                'url' => $this->injector->config['oauthd_url'] . '/auth/access_token',
+                'url' => $this->injector->config['oauthd_url'] . $this->injector->config['oauthd_base'] . '/access_token',
                 'body' => http_build_query(array(
                     'code' => $options['code'],
                     'key' => $this->injector->config['app_key'],
