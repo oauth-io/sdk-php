@@ -53,6 +53,10 @@ class OAuth {
      */
     public function setOAuthdUrl($url, $base = '/auth') {
         $this->injector->config['oauthd_url'] = $url;
+        if (strlen($base) > 1 && $base[0] != '/')
+            $base = '/' . $base;
+        if ($base == '/')
+            $base = '';
         $this->injector->config['oauthd_base'] = $base;
     }
     
