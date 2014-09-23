@@ -125,47 +125,71 @@ class OAuth {
         return $credentials;
     }
 
+    public function redirect($provider, $url) {
+        $urlToRedirect = 'http' . (isset($_SERVER['HTTPS']) ? 's' : '') . '://' . $_SERVER['HTTP_HOST'] . $url;
+        $csrf = $this->generateStateToken();
+        $location = $this->injector->config['oauthd_url'] . $this->injector->config['oauthd_base'] . '/' . $provider .
+            '?k=' . $this->injector->config['app_key'] . '&opts=' . 
+            urlencode(json_encode(array('state' => $csrf))) . 
+            '&redirect_type=server&redirect_uri=' . urlencode($urlToRedirect);
+        header("Location: " . $location);
+        die();
+    }
+
     public function auth($provider, $options = array()) {
-        
         // $options can contain code, credentials, or nothing. If nothing --> session call
         if (!$this->initialized) {
             throw new NotInitializedException('You must initialize the OAuth instance.');
         }
-        if (isset($options['code'])) {
-            $request = $this->injector->getRequest();
-            $response = $request->make_request(array(
-                'method' => 'POST',
-                'url' => $this->injector->config['oauthd_url'] . $this->injector->config['oauthd_base'] . '/access_token',
-                'body' => http_build_query(array(
-                    'code' => $options['code'],
-                    'key' => $this->injector->config['app_key'],
-                    'secret' => $this->injector->config['app_secret']
-                )) ,
-                'headers' => array(
-                    'Content-Type' => 'application/x-www-form-urlencoded'
-                )
-            ));
-            $credentials = json_decode(json_encode($response->body) , true);
-            if (isset($credentials['expires_in'])) {
-                $date = new \DateTime();
-                $credentials['expires'] = $date->getTimestamp() + $credentials['expires_in'];
+        else {
+
+            if (isset($options['redirect']) && $options['redirect']) {
+                $data = json_decode($_GET['oauthio'], true);
+                $code = $data['data']['code'];
             }
-            
-            if (isset($credentials['provider'])) {
-                $this->injector->session['oauthio']['auth'][$credentials['provider']] = $credentials;
+            else if (isset($options['code'])) {
+                $code = $options['code'];
             }
-        } else if (isset($options['credentials'])) {
-            $credentials = $options['credentials'];
-        } else {
-            if (isset($this->injector->session['oauthio']['auth'][$provider])) {
-                $credentials = $this->injector->session['oauthio']['auth'][$provider];
+
+
+            if (isset($code)) {
+                $request = $this->injector->getRequest();
+                $response = $request->make_request(array(
+                    'method' => 'POST',
+                    'url' => $this->injector->config['oauthd_url'] . $this->injector->config['oauthd_base'] . '/access_token',
+                    'body' => http_build_query(array(
+                        'code' => $code,
+                        'key' => $this->injector->config['app_key'],
+                        'secret' => $this->injector->config['app_secret']
+                    )) ,
+                    'headers' => array(
+                        'Content-Type' => 'application/x-www-form-urlencoded'
+                    )
+                ));
+                $credentials = json_decode(json_encode($response->body) , true);
+                if (isset($credentials['expires_in'])) {
+                    $date = new \DateTime();
+                    $credentials['expires'] = $date->getTimestamp() + $credentials['expires_in'];
+                }
+                
+                if (isset($credentials['provider'])) {
+                    $this->injector->session['oauthio']['auth'][$credentials['provider']] = $credentials;
+                }
+            } else if (isset($options['credentials'])) {
+                $credentials = $options['credentials'];
             } else {
-                throw new NotAuthenticatedException('The user is not authenticated for that provider');
+                if (isset($this->injector->session['oauthio']['auth'][$provider])) {
+                    $credentials = $this->injector->session['oauthio']['auth'][$provider];
+                } else {
+                    throw new NotAuthenticatedException('The user is not authenticated for that provider');
+                }
             }
+            $credentials = $this->refreshCredentials($credentials, isset($options['force_refresh']) ? $options['force_refresh'] : false);
+            $request_object = new RequestObject($credentials);
+            
+            return $request_object;
         }
-        $credentials = $this->refreshCredentials($credentials, isset($options['force_refresh']) ? $options['force_refresh'] : false);
-        $request_object = new RequestObject($credentials);
+
         
-        return $request_object;
     }
 }
