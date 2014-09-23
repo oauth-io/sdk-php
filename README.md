@@ -3,13 +3,13 @@ OAuth.io PHP SDK
 
 OAuth that just works !
 
-This SDK allows you to use OAuth.io's server-side flow from a PHP backend, to handle access tokens from your server instead of directly from your front-end.
+This SDK allows you to use OAuth.io from a PHP backend, to handle the authentication and API calls from your server instead of from your front-end, for 100+ API providers.
 
-You can use it with one of our front-end SDKs ([JavaScript][1], [PhoneGap][2], [iOs][3], [Android][4]), which will handle the user input for the OAuth flow.
-
-The current version of the SDK is `0.2.0`. Older versions are deprecated.
+The current version of the SDK is `0.3.0`. Older versions are deprecated.
 
 You can also get nightlies by checking out our `develop` branch.
+
+To get more information about this SDK and its method, please refer to its [reference documentation](https://oauth.io/docs/api-reference/server/php) on OAuth.io.
 
 Features
 --------
@@ -24,24 +24,12 @@ Common use-Case
 
 You don't want to use APIs directly from the front-end, but rather through web-services inside your PHP backend.
 
-The server-side flow
---------------------
-
-In the server-side OAuth authentication flow, the oauth token never leaves your backend.
-
-To authenticate a user, the flow follows these steps :
-
-- Ask the backend for a unique state token. This token will be used for communicating with oauth.io
-- Show a popup or redirect your user to request his permission to use his/her account on the requested provider
-- The latter gives you a code, that you give to your backend
-- The backend sends the code to oauth.io with other information like the oauth.io app's public key and secret.
-- oauth.io responds with the access_token, that you can then store on your backend as long as it's valid
-- You can then make requests to the API using that access token, directly from your backend
-
-As of `0.2.0` it is possible to get an automatically refreshed access token when a refresh token is available.
-
 Installation
 ------------
+
+First of all, you'll need to set your app's backend to **PHP** in your OAuth.io [dashboard](https://oauth.io/dashboard).
+
+This allows you to get a refresh token from the provider if available.
 
 You can install it through Composer by adding the following dependency to your composer.json :
 
@@ -59,10 +47,10 @@ Then run in the console :
 $ composer install
 ```
 
-How to use it ?
----------------
+Using the SDK
+-------------
 
-The `OAuth` class is stored in the `OAuth_io` namespace. You need to include it in your file like this (make sure you have required the Composer autoloader file) :
+The `OAuth` class is stored in the `OAuth_io` namespace. You need to include it in your file like this (make sure you have required the Composer autoloader file):
 
 ```php
 <?php
@@ -120,66 +108,53 @@ $oauth = new OAuth(null, false);
 //?>
 ```
 
-**Generating a token**
+**Authenticating the user**
 
-You need to provide your front-end with a state token, that will be used to exchange information with OAuth.io. To generate it in the back-end :
+The first thing you need to do is to create an endpoint that will redirect your user to the provider's authentication page, so that the user can accept the permissions your app needs.
+
+In this endpoint, call the `redirect` method like this:
 
 ```php
-<?php
-$token = $oauth->generateStateToken();
-//?>
+$oauth->redirect('the_provider', '/callback/url');
 ```
 
-The `generateStateToken()` method returns a unique token. This token is stored in the session, and used to communicate with oauth.io.
+This will automatically redirect your user to the provider's website. Once he has accepted the permissions, he will be redirected to the '/callback/url' on your app, where you'll be able to retrieve a request object.
 
-You have to give this token to your front-end, where you can show the user a popup for him to log in to the provider and accept your app's permissions (see further down to see how to do that).
-
-**Auth the user**
-
-To be able to make requests to a provider's API using its access token, you have to call the `auth(provider, options)` method first. This method creates a request object from either a code you got from the front-end SDK (for the first time authentication), the session (if the user was authenticated during the same session), or a credentials array that you saved earlier.
-
-To get a request object from a code (which automatically fills up the session for further use in other endpoints), you can do like this :
+In an endpoint associated to the '/callback/url', call the `auth` method with the `redirect` option set to true to get a request object, like this:
 
 ```php
 $request_object = $oauth->auth('the_provider', array(
-    'code': $code
+    'redirect' => true
 ));
 ```
 
 `$request_object` is an object that allows you to perform requests (see further down to learn how to), and that contains the user's credentials.
 
-You can get the credentials array if you need to save them for later use (or for a cron) like this :
+**Using the session to get a request object**
+
+Usually, you'll want to make calls to the API several times while the user is connected to your app. Once you've authenticated the user once with a code, the session is automatically configured to work with the SDK.
+
+Thus, you just need to do this to get a request object:
+
+```php
+$request_object = $oauth->auth('the_provider');
+```
+
+**Saving credentials to re-generate a request object**
+
+You can also save the user's credentials to make requests in a cron. You can get the credentials array from a request object like this :
 
 ```php
 $credentials = $request_object->getCredentials();
+// Here save the $credentials array for later use
 ```
 
-The `$credentials` array contains the access token, refresh token and other information returned by the provider.
+Then, when you want to reuse these credentials, you can rebuild a $request_object from them:
 
-**Retrieving a code from the front-end**
-
-```JavaScript
-//In the front end, using the JavaScript SDK :
-
-OAuth.initialize('your_key');
-OAuth.popup('a_provider', {
-        // The state token you got from the backend 
-        // through $oauth->generateStateToken():
-        state: 'state_token'
-    })
-.done(function (r) {
-    //You need to give r.code to your backend
-    $.ajax({
-            url: '/auth_endpoint/signin',
-            data: {
-                code: r.code
-            }
-    })
-    .done(function (data, status) {
-        //your user is authenticated server side
-        //you can now call endpoints that use the OAuth.io SDK
-    });
-});
+```php
+$request_object = $oauth->auth('the_provider', array(
+    'credentials' => $credentials
+));
 ```
 
 **Making requests to the API**
@@ -201,7 +176,10 @@ You can also call the `me(array $filters)` method from that request object. This
 
 ```php
 <?php
-$facebook_requester = $oauth->create('facebook');
+$facebook_requester = $oauth->auth('facebook', array(
+    'redirect' => true
+));
+
 $result = $facebook_requester->me(array('firstname', 'lastname', 'email'));
 
 // you'll have $result["firstname"], $result["lastname"] and $result["email"] set with the user's facebook information.
@@ -209,34 +187,6 @@ $result = $facebook_requester->me(array('firstname', 'lastname', 'email'));
 ```
 
 You can refer to the OAuth.io me() feature to get more information about the fields that are returned by this method.
-
-**Using the session**
-
-Usually, you'll want to make calls to the API several times while the user is connected to your app. Once you've authenticated the user once with a code, the session is automatically configured to work with the SDK.
-
-Thus, you just need to do this to get a request object:
-
-```php
-$request_object = $oauth->auth('the_provider');
-```
-
-**Saving credentials**
-
-You can also save the user's credentials to make requests in a cron. You can get the credentials array from a request object like this :
-
-```php
-$credentials = $request_object->getCredentials();
-// Here save the $credentials array for later use
-```
-
-
-Then, when you want to reuse these credentials, you can rebuild a $request_object from them:
-
-```php
-$request_object = $oauth->auth('the_provider', array(
-    'credentials' => $credentials
-));
-```
 
 **Refreshing the token**
 
