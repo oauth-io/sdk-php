@@ -3,13 +3,13 @@ OAuth.io PHP SDK
 
 OAuth that just works !
 
-This SDK allows you to use OAuth.io's server-side flow from a PHP backend, to handle access tokens from your server instead of directly from your front-end.
+This SDK allows you to use OAuth.io from a PHP backend, to handle access tokens from your server instead of directly from your front-end.
 
-You can use it with one of our front-end SDKs ([JavaScript][1], [PhoneGap][2], [iOs][3], [Android][4]), which will handle the user input for the OAuth flow.
-
-The current version of the SDK is `0.2.0`. Older versions are deprecated.
+The current version of the SDK is `0.3.0`. Older versions are deprecated.
 
 You can also get nightlies by checking out our `develop` branch.
+
+To get more information about this SDK and its method, please refer to its [reference documentation](https://oauth.io/docs/api-reference/server/php) on OAuth.io.
 
 Features
 --------
@@ -24,15 +24,12 @@ Common use-Case
 
 You don't want to use APIs directly from the front-end, but rather through web-services inside your PHP backend.
 
-Server-side flow
-----------------
-
-To authenticate the user, you'll need to set your app's backend to **PHP** in your OAuth.io [dashboard](https://oauth.io/dashboard).
-
-This allows you to get a refresh token from the provider if available.
-
 Installation
 ------------
+
+First of all, you'll need to set your app's backend to **PHP** in your OAuth.io [dashboard](https://oauth.io/dashboard).
+
+This allows you to get a refresh token from the provider if available.
 
 You can install it through Composer by adding the following dependency to your composer.json :
 
@@ -50,10 +47,10 @@ Then run in the console :
 $ composer install
 ```
 
-How to use it ?
----------------
+Using the SDK
+-------------
 
-The `OAuth` class is stored in the `OAuth_io` namespace. You need to include it in your file like this (make sure you have required the Composer autoloader file) :
+The `OAuth` class is stored in the `OAuth_io` namespace. You need to include it in your file like this (make sure you have required the Composer autoloader file):
 
 ```php
 <?php
@@ -133,7 +130,7 @@ $request_object = $oauth->auth('the_provider', array(
 
 `$request_object` is an object that allows you to perform requests (see further down to learn how to), and that contains the user's credentials.
 
-*Using the session to get a request object*
+**Using the session to get a request object**
 
 Usually, you'll want to make calls to the API several times while the user is connected to your app. Once you've authenticated the user once with a code, the session is automatically configured to work with the SDK.
 
@@ -143,7 +140,7 @@ Thus, you just need to do this to get a request object:
 $request_object = $oauth->auth('the_provider');
 ```
 
-*Saving credentials to re-generate a request object*
+**Saving credentials to re-generate a request object**
 
 You can also save the user's credentials to make requests in a cron. You can get the credentials array from a request object like this :
 
@@ -151,7 +148,6 @@ You can also save the user's credentials to make requests in a cron. You can get
 $credentials = $request_object->getCredentials();
 // Here save the $credentials array for later use
 ```
-
 
 Then, when you want to reuse these credentials, you can rebuild a $request_object from them:
 
