@@ -3,7 +3,7 @@ OAuth.io PHP SDK
 
 OAuth that just works !
 
-This SDK allows you to use OAuth.io from a PHP backend, to handle access tokens from your server instead of directly from your front-end.
+This SDK allows you to use OAuth.io from a PHP backend, to handle the authentication and API calls from your server instead of from your front-end, for 100+ API providers.
 
 The current version of the SDK is `0.3.0`. Older versions are deprecated.
 
