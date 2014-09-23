@@ -24,21 +24,12 @@ Common use-Case
 
 You don't want to use APIs directly from the front-end, but rather through web-services inside your PHP backend.
 
-The server-side flow
---------------------
+Server-side flow
+----------------
 
-In the server-side OAuth authentication flow, the oauth token never leaves your backend.
+To authenticate the user, you'll need to set your app's backend to **PHP** in your OAuth.io [dashboard](https://oauth.io/dashboard).
 
-To authenticate a user, the flow follows these steps :
-
-- Ask the backend for a unique state token. This token will be used for communicating with oauth.io
-- Show a popup or redirect your user to request his permission to use his/her account on the requested provider
-- The latter gives you a code, that you give to your backend
-- The backend sends the code to oauth.io with other information like the oauth.io app's public key and secret.
-- oauth.io responds with the access_token, that you can then store on your backend as long as it's valid
-- You can then make requests to the API using that access token, directly from your backend
-
-As of `0.2.0` it is possible to get an automatically refreshed access token when a refresh token is available.
+This allows you to get a refresh token from the provider if available.
 
 Installation
 ------------
