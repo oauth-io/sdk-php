@@ -2,7 +2,7 @@
     "name": "oauth-io/oauth",
     "description": "OAuth that just works !",
     "license": "Apache2",
-    "version": "0.2.0",
+    "version": "0.3.0",
     "authors": [
         {
             "name": "oauth-io",
