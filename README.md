@@ -36,7 +36,7 @@ You can install it through Composer by adding the following dependency to your c
 ```json
  "require": {
         ...
-        "oauth-io/oauth": "0.2.0"
+        "oauth-io/oauth": "0.3.0"
         ...
     },
 ```
