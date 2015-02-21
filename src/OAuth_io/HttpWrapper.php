@@ -1,4 +1,7 @@
 <?php
+
+use Unirest\Request as Request;
+
 namespace OAuth_io;
 
 class HttpWrapper {
@@ -30,26 +33,9 @@ class HttpWrapper {
         }
         $url = str_replace('%2C', ',', $url);
 
-        \Unirest::verifyPeer($injector->ssl_verification);
-        if ($options['method'] == 'GET') {
-            $response = \Unirest::get($url, $headers);
-        }
-        
-        if ($options['method'] == 'POST') {
-            $response = \Unirest::post($url, $headers, $body);
-        }
-        
-        if ($options['method'] == 'PUT') {
-            $response = \Unirest::put($url, $headers, $body);
-        }
-        
-        if ($options['method'] == 'DELETE') {
-            $response = \Unirest::delete($url, $headers);
-        }
-        
-        if ($options['method'] == 'PATCH') {
-            $response = \Unirest::patch($url, $headers, $body);
-        }
+        Request::verifyPeer($injector->ssl_verification);
+
+        $response = Request::send($options['method'], $url, $headers);
 
         return $response;
     }
