@@ -5,7 +5,7 @@ OAuth that just works !
 
 This SDK allows you to use OAuth.io from a PHP backend, to handle the authentication and API calls from your server instead of from your front-end, for 100+ API providers.
 
-The current version of the SDK is `0.3.0`. Older versions are deprecated.
+The current version of the SDK is `0.3.1`. Older versions are deprecated.
 
 You can also get nightlies by checking out our `develop` branch.
 
