@@ -1,9 +1,9 @@
 <?php
 
-use Unirest\Request as Request;
+
 
 namespace OAuth_io;
-
+use Unirest\Request as Request;
 class HttpWrapper {
     public function __create() {
     }
@@ -33,9 +33,9 @@ class HttpWrapper {
         }
         $url = str_replace('%2C', ',', $url);
 
-        Request::verifyPeer($injector->ssl_verification);
 
-        $response = Request::send($options['method'], $url, $headers);
+        Request::verifyPeer($injector->ssl_verification);
+        $response = Request::send($options['method'], $url, $body, $headers);
 
         return $response;
     }
