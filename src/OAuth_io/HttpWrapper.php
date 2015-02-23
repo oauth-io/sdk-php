@@ -1,10 +1,13 @@
 <?php
-namespace OAuth_io;
 
+
+
+namespace OAuth_io;
+use Unirest\Request as Request;
 class HttpWrapper {
     public function __create() {
     }
-    
+
     private function array_map_recursive($callback, $array) {
         foreach ($array as $key => $value) {
             if (is_object($array[$key])) {
@@ -15,10 +18,10 @@ class HttpWrapper {
         }
         return $array;
     }
-    
+
     public function make_request($options) {
         $injector = Injector::getInstance();
-        
+
         $url = $options['url'];
         $method = $options['method'];
         $headers = $options['headers'];
@@ -30,26 +33,9 @@ class HttpWrapper {
         }
         $url = str_replace('%2C', ',', $url);
 
-        \Unirest::verifyPeer($injector->ssl_verification);
-        if ($options['method'] == 'GET') {
-            $response = \Unirest::get($url, $headers);
-        }
-        
-        if ($options['method'] == 'POST') {
-            $response = \Unirest::post($url, $headers, $body);
-        }
-        
-        if ($options['method'] == 'PUT') {
-            $response = \Unirest::put($url, $headers, $body);
-        }
-        
-        if ($options['method'] == 'DELETE') {
-            $response = \Unirest::delete($url, $headers);
-        }
-        
-        if ($options['method'] == 'PATCH') {
-            $response = \Unirest::patch($url, $headers, $body);
-        }
+
+        Request::verifyPeer($injector->ssl_verification);
+        $response = Request::send($options['method'], $url, $body, $headers);
 
         return $response;
     }
