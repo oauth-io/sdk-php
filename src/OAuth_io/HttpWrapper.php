@@ -33,6 +33,10 @@ class HttpWrapper {
         }
         $url = str_replace('%2C', ',', $url);
 
+        if (isset($headers['Content-Type']) && $headers['Content-Type'] == 'application/json' && is_array($body)) {
+            $body = json_encode($body);
+        }
+
 
         Request::verifyPeer($injector->ssl_verification);
         $response = Request::send($options['method'], $url, $body, $headers);
