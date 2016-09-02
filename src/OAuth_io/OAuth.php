@@ -126,7 +126,7 @@ class OAuth {
     }
 
     public function redirect($provider, $url) {
-        $urlToRedirect = 'http' . (isset($_SERVER['HTTPS']) ? 's' : '') . '://' . $_SERVER['HTTP_HOST'] . $url;
+        $urlToRedirect = 'http' . ((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] != 'off') ? 's' : '') . '://' . $_SERVER['HTTP_HOST'] . $url;
         $csrf = $this->generateStateToken();
         $location = $this->injector->config['oauthd_url'] . $this->injector->config['oauthd_base'] . '/' . $provider .
             '?k=' . $this->injector->config['app_key'] . '&opts=' . 
